@@ -1,0 +1,15 @@
+History/
+__Previews/
+
+*.Lock
+*.lock
+*.LOG
+
+*.SchDocPreview
+*.PcbDocPreview
+
+
+Project Logs for */
+
+*.~*
+*.bck
