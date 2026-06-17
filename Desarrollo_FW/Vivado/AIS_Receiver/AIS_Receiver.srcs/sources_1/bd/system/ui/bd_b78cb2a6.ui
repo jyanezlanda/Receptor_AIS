@@ -1,82 +1,78 @@
 {
    "ActiveEmotionalView":"Default View",
-   "Default View_ScaleFactor":"0.717936",
-   "Default View_TopLeft":"-766,1346",
+   "Default View_ScaleFactor":"0.534946",
+   "Default View_TopLeft":"1322,-482",
    "ExpandedHierarchyInLayout":"",
-   "PinnedPorts":"",
+   "HierExpandStatus_comment_0":"false",
+   "HierExpandStatus_comment_1":"false",
+   "HierExpandStatus_comment_2":"false",
+   "HierExpandStatus_comment_3":"false",
+   "comment_0":"Hace la multiplicacion entre I y Q de la senal del ADC y el oscilador local complejo",
+   "comment_1":"Filtro FIR. Compensa la respuesta del CIC y decima -> 100ksps",
+   "comment_2":"FIFO para guardar los datos",
+   "comment_3":"CIC decimador -> 1Msps",
+   "commentid":"comment_0|comment_1|comment_2|comment_3|",
+   "fillcolor_comment_1":"",
+   "font_comment_0":"12",
+   "font_comment_1":"12",
+   "font_comment_2":"12",
+   "font_comment_3":"12",
    "guistr":"# # String gsaved with Nlview 7.8.0 2024-04-26 e1825d835c VDI=44 GEI=38 GUI=JA:21.0
 #  -string -flagsOSRD
-preplace port s_axi -pg 1 -lvl 0 -x -650 -y 1150 -defaultsOSRD
-preplace port port-id_aclk -pg 1 -lvl 0 -x -650 -y 1530 -defaultsOSRD
-preplace port port-id_aresetn -pg 1 -lvl 0 -x -650 -y 1490 -defaultsOSRD
-preplace portBus din -pg 1 -lvl 0 -x -650 -y 1670 -defaultsOSRD
-preplace inst hub_0 -pg 1 -lvl 16 -x 4150 -y 1580 -defaultsOSRD
-preplace inst fifo_reset_slice_0 -pg 1 -lvl 13 -x 3330 -y 1970 -defaultsOSRD
-preplace inst const_0 -pg 1 -lvl 4 -x 340 -y 1700 -defaultsOSRD
-preplace inst cic_I -pg 1 -lvl 5 -x 710 -y 1430 -defaultsOSRD
-preplace inst conv_0 -pg 1 -lvl 7 -x 1360 -y 1730 -defaultsOSRD
-preplace inst fir_0 -pg 1 -lvl 8 -x 1630 -y 1740 -defaultsOSRD
-preplace inst subset_0 -pg 1 -lvl 9 -x 1950 -y 1750 -defaultsOSRD
-preplace inst fir_1 -pg 1 -lvl 10 -x 2270 -y 1760 -defaultsOSRD
-preplace inst subset_1 -pg 1 -lvl 11 -x 2590 -y 1780 -defaultsOSRD
-preplace inst fp_0 -pg 1 -lvl 12 -x 2900 -y 1800 -defaultsOSRD
-preplace inst conv_1 -pg 1 -lvl 13 -x 3330 -y 1820 -defaultsOSRD
-preplace inst fifo_0 -pg 1 -lvl 14 -x 3600 -y 1840 -defaultsOSRD
-preplace inst conv_2 -pg 1 -lvl 15 -x 3860 -y 1840 -defaultsOSRD
-preplace inst cic_Q -pg 1 -lvl 5 -x 710 -y 2000 -defaultsOSRD
-preplace inst axis_combiner_0 -pg 1 -lvl 6 -x 1080 -y 1710 -defaultsOSRD
-preplace inst adc_slicer_I -pg 1 -lvl 2 -x -210 -y 1590 -defaultsOSRD
-preplace inst adc_slicer_Q -pg 1 -lvl 2 -x -210 -y 1730 -defaultsOSRD
-preplace inst dds_0 -pg 1 -lvl 1 -x -470 -y 1320 -defaultsOSRD
-preplace inst cfg_slicer_0 -pg 1 -lvl 14 -x 3600 -y 1210 -defaultsOSRD -orient R180
-preplace inst dds_1 -pg 1 -lvl 1 -x -470 -y 1880 -defaultsOSRD
-preplace inst mult_I_cos -pg 1 -lvl 3 -x 70 -y 1320 -defaultsOSRD
-preplace inst dds_slicer_cos_0 -pg 1 -lvl 2 -x -210 -y 1320 -defaultsOSRD
-preplace inst dds_slicer_cos_1 -pg 1 -lvl 2 -x -210 -y 1880 -defaultsOSRD
-preplace inst mult_Q_cos -pg 1 -lvl 3 -x 70 -y 1880 -defaultsOSRD
-preplace inst dds_slicer_asin_0 -pg 1 -lvl 2 -x -210 -y 1470 -defaultsOSRD
-preplace inst mult_I_asin -pg 1 -lvl 3 -x 70 -y 1480 -defaultsOSRD
-preplace inst mult_Q_sin -pg 1 -lvl 3 -x 70 -y 2040 -defaultsOSRD
-preplace inst dds_slicer_sin_1 -pg 1 -lvl 2 -x -210 -y 2040 -defaultsOSRD
-preplace inst adder_I -pg 1 -lvl 4 -x 340 -y 1400 -defaultsOSRD
-preplace inst adder_Q -pg 1 -lvl 4 -x 340 -y 1980 -defaultsOSRD
-preplace netloc aclk_1 1 0 16 -610J 1400 N 1400 -50 1400 240 1480 530 1720 920 1800 1250 1810 1480 1820 1790 1830 2120 1840 2420 1860 2750 1720 3200 1740 3460 1740 3750 1630 N
-preplace netloc adc_slicer_I_dout 1 2 1 -60 1340n
-preplace netloc adc_slicer_Q_dout 1 2 1 -70 1730n
-preplace netloc aresetn_1 1 0 16 -600J 1530 N 1530 -90 1560 N 1560 540 1740 900 1810 1240 1820 1470 1830 1780 1840 2110 1850 2430 1870 2760 1880 3210 1650 NJ 1650 NJ 1650 N
-preplace netloc c_addsub_0_S 1 4 1 430 1400n
-preplace netloc c_addsub_1_S 1 4 1 N 1980
-preplace netloc const_0_dout 1 4 1 520 1430n
-preplace netloc dds_0_dout 1 1 1 -330 1320n
-preplace netloc dds_1_dout 1 1 1 -330 1880n
-preplace netloc dds_slicer_1_dout 1 2 1 N 1880
-preplace netloc dds_slicer_cos_2_dout 1 2 1 -40 1470n
-preplace netloc dds_slicer_sin_1_dout 1 2 1 N 2040
-preplace netloc din_1 1 0 2 N 1670 -330
-preplace netloc fifo_0_read_count 1 14 2 3740 1670 NJ
-preplace netloc hub_0_cfg_data 1 12 5 3220 1270 NJ 1270 3750J 1270 NJ 1270 4290
-preplace netloc mult_I_asin_P 1 3 1 190 1480n
-preplace netloc mult_I_cos_P 1 3 1 200 1320n
-preplace netloc mult_Q_cos_P 1 3 1 180 1880n
-preplace netloc mult_Q_sin_P 1 3 1 250 1400n
-preplace netloc port_slicer_0_dout 1 0 14 -590 1210 N 1210 N 1210 N 1210 N 1210 N 1210 N 1210 N 1210 N 1210 N 1210 N 1210 N 1210 N 1210 N
-preplace netloc port_slicer_0_dout1 1 2 1 N 1320
-preplace netloc slice_0_dout 1 13 2 3460 1920 3750J
-preplace netloc Conn1 1 0 16 NJ 1150 N 1150 N 1150 N 1150 N 1150 NJ 1150 N 1150 NJ 1150 NJ 1150 NJ 1150 NJ 1150 NJ 1150 NJ 1150 NJ 1150 NJ 1150 3970J
-preplace netloc axis_combiner_0_M_AXIS 1 6 1 N 1710
-preplace netloc cic_I_M_AXIS_DATA 1 5 1 900 1430n
-preplace netloc cic_Q_M_AXIS_DATA 1 5 1 910 1700n
-preplace netloc conv_0_M_AXIS 1 7 1 1470 1720n
-preplace netloc conv_1_M_AXIS 1 13 1 N 1820
-preplace netloc conv_2_M_AXIS 1 15 1 3980 1490n
-preplace netloc fifo_0_m_axis 1 14 1 N 1820
-preplace netloc fir_0_M_AXIS_DATA 1 8 1 1790 1730n
-preplace netloc fir_1_M_AXIS_DATA 1 10 1 N 1760
-preplace netloc fp_0_M_AXIS_RESULT 1 12 1 N 1800
-preplace netloc subset_0_M_AXIS 1 9 1 2110 1740n
-preplace netloc subset_1_M_AXIS 1 11 1 N 1780
-levelinfo -pg 1 -650 -470 -210 70 340 710 1080 1360 1630 1950 2270 2590 2900 3330 3600 3860 4150 4320
-pagesize -pg 1 -db -bbox -sgen -770 -40 5350 4660
-"
+preplace port s_axi -pg 1 -lvl 0 -x 0 -y 220 -defaultsOSRD
+preplace port s_axis_adc -pg 1 -lvl 0 -x 0 -y -100 -defaultsOSRD
+preplace port port-id_aclk -pg 1 -lvl 0 -x 0 -y -50 -defaultsOSRD
+preplace port port-id_aresetn -pg 1 -lvl 0 -x 0 -y 90 -defaultsOSRD
+preplace inst hub_0 -pg 1 -lvl 11 -x 3460 -y 70 -defaultsOSRD
+preplace inst slice_0 -pg 1 -lvl 9 -x 2820 -y 100 -defaultsOSRD
+preplace inst slice_1 -pg 1 -lvl 1 -x 430 -y 20 -defaultsOSRD
+preplace inst phase_0 -pg 1 -lvl 2 -x 680 -y 10 -defaultsOSRD
+preplace inst osc_0 -pg 1 -lvl 3 -x 970 -y 20 -defaultsOSRD
+preplace inst lfsr_0 -pg 1 -lvl 3 -x 970 -y 140 -defaultsOSRD
+preplace inst mult_0 -pg 1 -lvl 4 -x 1290 -y -30 -defaultsOSRD
+preplace inst bcast_0 -pg 1 -lvl 5 -x 1600 -y -10 -defaultsOSRD
+preplace inst cic_0 -pg 1 -lvl 6 -x 1920 -y -130 -defaultsOSRD
+preplace inst comb_0 -pg 1 -lvl 7 -x 2260 -y -60 -defaultsOSRD
+preplace inst conv_0 -pg 1 -lvl 8 -x 2550 -y -40 -defaultsOSRD
+preplace inst fir_0 -pg 1 -lvl 9 -x 2820 -y -20 -defaultsOSRD
+preplace inst fifo_0 -pg 1 -lvl 10 -x 3120 -y 0 -defaultsOSRD
+preplace inst cic_1 -pg 1 -lvl 6 -x 1920 -y 60 -defaultsOSRD
+preplace netloc aclk_1 1 0 11 NJ -50 550 -60 820 -50 1150 -120 1440 -100 1780 -50 2100 -150 2440 -130 2690 -100 2980 -80 3280
+preplace netloc aresetn_1 1 0 11 NJ 90 N 90 830 -130 N -130 1450 -90 1790 -30 2090 -160 2450 -120 2680 -110 N -110 3290
+preplace netloc hub_0_cfg_data 1 0 12 310 230 N 230 N 230 N 230 N 230 N 230 N 230 N 230 2680 250 N 250 N 250 3610
+preplace netloc rx_0_read_count 1 10 1 3260 20n
+preplace netloc slice_0_dout 1 9 1 2950 20n
+preplace netloc slice_1_dout 1 1 1 N 20
+preplace netloc Conn1 1 0 11 NJ 220 N 220 N 220 N 220 N 220 N 220 N 220 N 220 N 220 N 220 3270
+preplace netloc Conn2 1 0 4 NJ -100 N -100 N -100 1110
+preplace netloc bcast_0_M00_AXIS 1 5 1 1750 -150n
+preplace netloc bcast_0_M01_AXIS 1 5 1 1750 0n
+preplace netloc cic_0_M_AXIS_DATA 1 6 1 2050 -130n
+preplace netloc cic_1_M_AXIS_DATA 1 6 1 2110 -70n
+preplace netloc comb_0_M_AXIS 1 7 1 N -60
+preplace netloc conv_0_M_AXIS 1 8 1 N -40
+preplace netloc dds_0_M_AXIS_DATA 1 3 1 1110 -40n
+preplace netloc fir_0_M_AXIS_DATA 1 9 1 NJ -20
+preplace netloc lfsr_0_m_axis 1 3 1 1160 -20n
+preplace netloc mult_0_M_AXIS_DOUT 1 4 1 N -30
+preplace netloc phase_0_m_axis 1 2 1 N 10
+preplace netloc rx_0_m_axis 1 10 1 N -20
+preplace cgraphic comment_3 place top 1814 371 textcolor 4 linecolor 3 linewidth 2
+preplace cgraphic comment_2 place right -1599 -163 textcolor 4 linecolor 3 linewidth 2
+preplace cgraphic comment_1 place left -478 -174 textcolor 4 linecolor 3 linewidth 2
+preplace cgraphic comment_0 place left 949 -175 textcolor 4 linecolor 3 linewidth 2
+levelinfo -pg 1 0 430 680 970 1290 1600 1920 2260 2550 2820 3120 3460 3630
+pagesize -pg 1 -db -bbox -sgen -140 -610 4620 670
+",
+   "linecolor_comment_1":"",
+   "linktoobj_comment_1":"/rx_0/fifo_0",
+   "linktotype_comment_1":"bd_cell",
+   "textcolor_comment_1":""
 }
 0
+{
+   "/comment_2":"comment_0",
+   "/comment_5":"comment_2",
+   "/comment_9":"comment_3",
+   "/rx_0/fifo_0/comment_3":"comment_1"
+}

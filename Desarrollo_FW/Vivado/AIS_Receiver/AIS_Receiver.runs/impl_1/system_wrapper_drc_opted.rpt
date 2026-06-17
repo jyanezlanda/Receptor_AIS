@@ -1,7 +1,7 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2025.2 (win64) Build 6299465 Fri Nov 14 19:35:11 GMT 2025
-| Date         : Sun May 31 19:55:23 2026
+| Date         : Tue Jun 16 23:42:36 2026
 | Host         : DESKTOP-KIRSTEN running 64-bit major release  (build 9200)
 | Command      : report_drc -file system_wrapper_drc_opted.rpt -pb system_wrapper_drc_opted.pb -rpx system_wrapper_drc_opted.rpx
 | Design       : system_wrapper
@@ -24,56 +24,72 @@ Table of Contents
       Design limits: <entire design considered>
            Ruledeck: default
              Max checks: <unlimited>
-             Checks found: 8
-+---------+----------+-------------------------------------------------------------------+--------+
-| Rule    | Severity | Description                                                       | Checks |
-+---------+----------+-------------------------------------------------------------------+--------+
-| AVAL-4  | Advisory | enum_USE_DPORT_FALSE_enum_DREG_ADREG_0_connects_CED_CEAD_RSTD_GND | 2      |
-| AVAL-5  | Advisory | enum_USE_MULT_NONE_enum_DREG_ADREG_0_connects_CED_CEAD_RSTD_GND   | 2      |
-| REQP-28 | Advisory | enum_USE_MULT_NONE_connects_CEM_GND                               | 2      |
-| REQP-30 | Advisory | enum_MREG_0_connects_CEM_GND                                      | 2      |
-+---------+----------+-------------------------------------------------------------------+--------+
+             Checks found: 11
++-----------+----------+-------------------------------------------------------------------+--------+
+| Rule      | Severity | Description                                                       | Checks |
++-----------+----------+-------------------------------------------------------------------+--------+
+| REQP-1723 | Warning  | DSP_Abus_sign_bit_restriction                                     | 2      |
+| REQP-1724 | Warning  | DSP_Dbus_sign_bit_restriction                                     | 2      |
+| AVAL-4    | Advisory | enum_USE_DPORT_FALSE_enum_DREG_ADREG_0_connects_CED_CEAD_RSTD_GND | 5      |
+| REQP-28   | Advisory | enum_USE_MULT_NONE_connects_CEM_GND                               | 1      |
+| REQP-30   | Advisory | enum_MREG_0_connects_CEM_GND                                      | 1      |
++-----------+----------+-------------------------------------------------------------------+--------+
 
 2. REPORT DETAILS
 -----------------
+REQP-1723#1 Warning
+DSP_Abus_sign_bit_restriction  
+system_i/rx_0/mult_0/U0/i_synth/i_synth/three_mult_structure.use_dsp.i_dsp/mult1_preadder_d_plus_a.mult1/mult/use_prim.appDSP[0].bppDSP[0].use_dsp.use_dsp48e1.iDSP48E1: When using the PreAdder and USE_DPORT is TRUE, the A operand should be restricted to 24 bit two's complement (and sign extended) to avoid over/underflow in the pre-add stage.
+Related violations: <none>
+
+REQP-1723#2 Warning
+DSP_Abus_sign_bit_restriction  
+system_i/rx_0/mult_0/U0/i_synth/i_synth/three_mult_structure.use_dsp.i_dsp/mult3_preadder_d_minus_a.mult3/mult/use_prim.appDSP[0].bppDSP[0].use_dsp.use_dsp48e1.iDSP48E1: When using the PreAdder and USE_DPORT is TRUE, the A operand should be restricted to 24 bit two's complement (and sign extended) to avoid over/underflow in the pre-add stage.
+Related violations: <none>
+
+REQP-1724#1 Warning
+DSP_Dbus_sign_bit_restriction  
+system_i/rx_0/mult_0/U0/i_synth/i_synth/three_mult_structure.use_dsp.i_dsp/mult1_preadder_d_plus_a.mult1/mult/use_prim.appDSP[0].bppDSP[0].use_dsp.use_dsp48e1.iDSP48E1: When using the PreAdder and USE_DPORT is TRUE, the D operand should be restricted to 24 bit two's complement (and sign extended) to avoid over/underflow in the pre-add stage.
+Related violations: <none>
+
+REQP-1724#2 Warning
+DSP_Dbus_sign_bit_restriction  
+system_i/rx_0/mult_0/U0/i_synth/i_synth/three_mult_structure.use_dsp.i_dsp/mult3_preadder_d_minus_a.mult3/mult/use_prim.appDSP[0].bppDSP[0].use_dsp.use_dsp48e1.iDSP48E1: When using the PreAdder and USE_DPORT is TRUE, the D operand should be restricted to 24 bit two's complement (and sign extended) to avoid over/underflow in the pre-add stage.
+Related violations: <none>
+
 AVAL-4#1 Advisory
 enum_USE_DPORT_FALSE_enum_DREG_ADREG_0_connects_CED_CEAD_RSTD_GND  
-system_i/rx_0/c_addsub_0/U0/xst_addsub/xbip_addsub.i_a_b_nogrowth.not_unsigned_max_width.i_dsp_addsub/opt_vx7.i_add/i_primitive: DSP48E1 is not using the D port (USE_DPORT = FALSE). For improved power characteristics, set DREG and ADREG to '1', tie CED, CEAD, and RSTD to logic '0'.
+system_i/rx_0/osc_0/U0/i_synth/i_dds/I_SINCOS.i_comp_eff.i_eff/MULT_PI_U/opt_vx7.i_uniwrap/i_primitive: DSP48E1 is not using the D port (USE_DPORT = FALSE). For improved power characteristics, set DREG and ADREG to '1', tie CED, CEAD, and RSTD to logic '0'.
 Related violations: <none>
 
 AVAL-4#2 Advisory
 enum_USE_DPORT_FALSE_enum_DREG_ADREG_0_connects_CED_CEAD_RSTD_GND  
-system_i/rx_0/c_addsub_1/U0/xst_addsub/xbip_addsub.i_a_b_nogrowth.not_unsigned_max_width.i_dsp_addsub/opt_vx7.i_add/i_primitive: DSP48E1 is not using the D port (USE_DPORT = FALSE). For improved power characteristics, set DREG and ADREG to '1', tie CED, CEAD, and RSTD to logic '0'.
+system_i/rx_0/osc_0/U0/i_synth/i_dds/I_SINCOS.i_comp_eff.i_eff/S1_COS_U/opt_vx7.i_uniwrap/i_primitive: DSP48E1 is not using the D port (USE_DPORT = FALSE). For improved power characteristics, set DREG and ADREG to '1', tie CED, CEAD, and RSTD to logic '0'.
 Related violations: <none>
 
-AVAL-5#1 Advisory
-enum_USE_MULT_NONE_enum_DREG_ADREG_0_connects_CED_CEAD_RSTD_GND  
-system_i/rx_0/c_addsub_0/U0/xst_addsub/xbip_addsub.i_a_b_nogrowth.not_unsigned_max_width.i_dsp_addsub/opt_vx7.i_add/i_primitive: DSP48E1 is not using the Multiplier (USE_MULT = NONE). For improved power characteristics, set DREG and ADREG to '1', tie CED, CEAD, and RSTD to logic '0'.
+AVAL-4#3 Advisory
+enum_USE_DPORT_FALSE_enum_DREG_ADREG_0_connects_CED_CEAD_RSTD_GND  
+system_i/rx_0/osc_0/U0/i_synth/i_dds/I_SINCOS.i_comp_eff.i_eff/S1_SIN_U/opt_vx7.i_uniwrap/i_primitive: DSP48E1 is not using the D port (USE_DPORT = FALSE). For improved power characteristics, set DREG and ADREG to '1', tie CED, CEAD, and RSTD to logic '0'.
 Related violations: <none>
 
-AVAL-5#2 Advisory
-enum_USE_MULT_NONE_enum_DREG_ADREG_0_connects_CED_CEAD_RSTD_GND  
-system_i/rx_0/c_addsub_1/U0/xst_addsub/xbip_addsub.i_a_b_nogrowth.not_unsigned_max_width.i_dsp_addsub/opt_vx7.i_add/i_primitive: DSP48E1 is not using the Multiplier (USE_MULT = NONE). For improved power characteristics, set DREG and ADREG to '1', tie CED, CEAD, and RSTD to logic '0'.
+AVAL-4#4 Advisory
+enum_USE_DPORT_FALSE_enum_DREG_ADREG_0_connects_CED_CEAD_RSTD_GND  
+system_i/rx_0/osc_0/U0/i_synth/i_dds/I_SINCOS.i_comp_eff.i_eff/SECOND_ORDER_APPROXIMATION.S2_COS_U/opt_vx7.i_uniwrap/i_primitive: DSP48E1 is not using the D port (USE_DPORT = FALSE). For improved power characteristics, set DREG and ADREG to '1', tie CED, CEAD, and RSTD to logic '0'.
+Related violations: <none>
+
+AVAL-4#5 Advisory
+enum_USE_DPORT_FALSE_enum_DREG_ADREG_0_connects_CED_CEAD_RSTD_GND  
+system_i/rx_0/osc_0/U0/i_synth/i_dds/I_SINCOS.i_comp_eff.i_eff/SECOND_ORDER_APPROXIMATION.S2_SIN_U/opt_vx7.i_uniwrap/i_primitive: DSP48E1 is not using the D port (USE_DPORT = FALSE). For improved power characteristics, set DREG and ADREG to '1', tie CED, CEAD, and RSTD to logic '0'.
 Related violations: <none>
 
 REQP-28#1 Advisory
 enum_USE_MULT_NONE_connects_CEM_GND  
-system_i/rx_0/fir_0/U0/i_synth/g_decimation.i_decimation/g_op_paths[0].g_combine.i_ext_mult/g_two_col_comb.i_gen_upper_bits/i_add_accum/g_dsp.g_dsp48e1.i_dsp48e1: When the DSP48E1 USE_MULT attribute is set to NONE, the CEM input pin should be tied to GND to save power.
-Related violations: <none>
-
-REQP-28#2 Advisory
-enum_USE_MULT_NONE_connects_CEM_GND  
-system_i/rx_0/fir_1/U0/i_synth/g_decimation.i_decimation/g_op_paths[0].g_combine.i_ext_mult/g_two_col_comb.i_gen_upper_bits/i_add_accum/g_dsp.g_dsp48e1.i_dsp48e1: When the DSP48E1 USE_MULT attribute is set to NONE, the CEM input pin should be tied to GND to save power.
+system_i/rx_0/fir_0/U0/i_synth/g_polyphase_decimation.i_polyphase_decimation/g_op_paths[0].g_combine.i_ext_mult/g_two_col_comb.i_gen_upper_bits/i_add_accum/g_dsp.g_dsp48e1.i_dsp48e1: When the DSP48E1 USE_MULT attribute is set to NONE, the CEM input pin should be tied to GND to save power.
 Related violations: <none>
 
 REQP-30#1 Advisory
 enum_MREG_0_connects_CEM_GND  
-system_i/rx_0/fir_0/U0/i_synth/g_decimation.i_decimation/g_op_paths[0].g_combine.i_ext_mult/g_two_col_comb.i_gen_upper_bits/i_add_accum/g_dsp.g_dsp48e1.i_dsp48e1: When the DSP48E1 MREG attribute is set to 0, the CEM input pin should be tied to GND to save power.
-Related violations: <none>
-
-REQP-30#2 Advisory
-enum_MREG_0_connects_CEM_GND  
-system_i/rx_0/fir_1/U0/i_synth/g_decimation.i_decimation/g_op_paths[0].g_combine.i_ext_mult/g_two_col_comb.i_gen_upper_bits/i_add_accum/g_dsp.g_dsp48e1.i_dsp48e1: When the DSP48E1 MREG attribute is set to 0, the CEM input pin should be tied to GND to save power.
+system_i/rx_0/fir_0/U0/i_synth/g_polyphase_decimation.i_polyphase_decimation/g_op_paths[0].g_combine.i_ext_mult/g_two_col_comb.i_gen_upper_bits/i_add_accum/g_dsp.g_dsp48e1.i_dsp48e1: When the DSP48E1 MREG attribute is set to 0, the CEM input pin should be tied to GND to save power.
 Related violations: <none>
 
 

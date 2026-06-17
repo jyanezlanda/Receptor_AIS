@@ -2,7 +2,7 @@
   "schema": "xilinx.com:schema:json_instance:1.0",
   "ip_inst": {
     "xci_name": "system_slice_0_0",
-    "cell_name": "rx_0/fifo_reset_slice_0",
+    "cell_name": "rx_0/slice_0",
     "component_reference": "xilinx.com:module_ref:port_slicer:1.0",
     "ip_revision": "1",
     "gen_directory": "../../../../../../AIS_Receiver.gen/sources_1/bd/system/ip/system_slice_0_0",
@@ -49,5 +49,5 @@
       }
     }
   },
-  "checksum": "6d502482"
+  "checksum": "5d83fad4"
 }

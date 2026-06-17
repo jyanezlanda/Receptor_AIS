@@ -60,7 +60,7 @@ ENTITY system_cic_0_0 IS
   PORT (
     aclk : IN STD_LOGIC;
     aresetn : IN STD_LOGIC;
-    s_axis_data_tdata : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+    s_axis_data_tdata : IN STD_LOGIC_VECTOR(23 DOWNTO 0);
     s_axis_data_tvalid : IN STD_LOGIC;
     s_axis_data_tready : OUT STD_LOGIC;
     m_axis_data_tdata : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -118,7 +118,7 @@ ARCHITECTURE system_cic_0_0_arch OF system_cic_0_0 IS
       s_axis_config_tdata : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
       s_axis_config_tvalid : IN STD_LOGIC;
       s_axis_config_tready : OUT STD_LOGIC;
-      s_axis_data_tdata : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+      s_axis_data_tdata : IN STD_LOGIC_VECTOR(23 DOWNTO 0);
       s_axis_data_tvalid : IN STD_LOGIC;
       s_axis_data_tready : OUT STD_LOGIC;
       s_axis_data_tlast : IN STD_LOGIC;
@@ -153,7 +153,7 @@ ARCHITECTURE system_cic_0_0_arch OF system_cic_0_0 IS
   ATTRIBUTE X_INTERFACE_INFO OF m_axis_data_tvalid: SIGNAL IS "xilinx.com:interface:axis:1.0 M_AXIS_DATA TVALID";
   ATTRIBUTE X_INTERFACE_INFO OF s_axis_data_tdata: SIGNAL IS "xilinx.com:interface:axis:1.0 S_AXIS_DATA TDATA";
   ATTRIBUTE X_INTERFACE_MODE OF s_axis_data_tdata: SIGNAL IS "slave S_AXIS_DATA";
-  ATTRIBUTE X_INTERFACE_PARAMETER OF s_axis_data_tdata: SIGNAL IS "XIL_INTERFACENAME S_AXIS_DATA, TDATA_NUM_BYTES 4, TDEST_WIDTH 0, TID_WIDTH 0, TUSER_WIDTH 0, HAS_TREADY 1, HAS_TSTRB 0, HAS_TKEEP 0, HAS_TLAST 0, FREQ_HZ 125000000, PHASE 0.0, CLK_DOMAIN system_pll_0_0_clk_out1, LAYERED_METADATA undef, INSERT_VIP 0";
+  ATTRIBUTE X_INTERFACE_PARAMETER OF s_axis_data_tdata: SIGNAL IS "XIL_INTERFACENAME S_AXIS_DATA, TDATA_NUM_BYTES 3, TDEST_WIDTH 0, TID_WIDTH 0, TUSER_WIDTH 0, HAS_TREADY 1, HAS_TSTRB 0, HAS_TKEEP 0, HAS_TLAST 0, FREQ_HZ 125000000, PHASE 0.0, CLK_DOMAIN system_pll_0_0_clk_out1, LAYERED_METADATA undef, INSERT_VIP 0";
   ATTRIBUTE X_INTERFACE_INFO OF s_axis_data_tready: SIGNAL IS "xilinx.com:interface:axis:1.0 S_AXIS_DATA TREADY";
   ATTRIBUTE X_INTERFACE_INFO OF s_axis_data_tvalid: SIGNAL IS "xilinx.com:interface:axis:1.0 S_AXIS_DATA TVALID";
 BEGIN
@@ -163,15 +163,15 @@ BEGIN
       C_FILTER_TYPE => 1,
       C_NUM_STAGES => 6,
       C_DIFF_DELAY => 1,
-      C_RATE => 1000,
-      C_INPUT_WIDTH => 25,
+      C_RATE => 125,
+      C_INPUT_WIDTH => 24,
       C_OUTPUT_WIDTH => 32,
       C_USE_DSP => 0,
       C_HAS_ROUNDING => 0,
       C_NUM_CHANNELS => 1,
       C_RATE_TYPE => 0,
-      C_MIN_RATE => 1000,
-      C_MAX_RATE => 1000,
+      C_MIN_RATE => 125,
+      C_MAX_RATE => 125,
       C_SAMPLE_FREQ => 1,
       C_CLK_FREQ => 1,
       C_USE_STREAMING_INTERFACE => 1,
@@ -183,14 +183,14 @@ BEGIN
       C_C4 => 36,
       C_C5 => 36,
       C_C6 => 35,
-      C_I1 => 85,
-      C_I2 => 78,
-      C_I3 => 69,
-      C_I4 => 60,
-      C_I5 => 52,
-      C_I6 => 43,
+      C_I1 => 66,
+      C_I2 => 65,
+      C_I3 => 59,
+      C_I4 => 53,
+      C_I5 => 47,
+      C_I6 => 42,
       C_S_AXIS_CONFIG_TDATA_WIDTH => 1,
-      C_S_AXIS_DATA_TDATA_WIDTH => 32,
+      C_S_AXIS_DATA_TDATA_WIDTH => 24,
       C_M_AXIS_DATA_TDATA_WIDTH => 32,
       C_M_AXIS_DATA_TUSER_WIDTH => 1,
       C_HAS_DOUT_TREADY => 0,

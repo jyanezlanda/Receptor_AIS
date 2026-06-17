@@ -122,11 +122,11 @@ module system_sv (
   (* X_INTERFACE_IGNORE = "true" *)
   output wire [3:0] dac_pwm_o,
   (* X_INTERFACE_IGNORE = "true" *)
-  inout wire [7:0] exp_p_tri_io,
-  (* X_INTERFACE_IGNORE = "true" *)
   inout wire [7:0] exp_n_tri_io,
   (* X_INTERFACE_IGNORE = "true" *)
-  output wire [7:0] led_o
+  output wire [7:0] led_o,
+  (* X_INTERFACE_IGNORE = "true" *)
+  output wire [1:0] exp_p_tri_io
 );
 
   system inst (
@@ -164,9 +164,9 @@ module system_sv (
     .dac_sel_o(dac_sel_o),
     .dac_wrt_o(dac_wrt_o),
     .dac_pwm_o(dac_pwm_o),
-    .exp_p_tri_io(exp_p_tri_io),
     .exp_n_tri_io(exp_n_tri_io),
-    .led_o(led_o)
+    .led_o(led_o),
+    .exp_p_tri_io(exp_p_tri_io)
   );
 
 endmodule

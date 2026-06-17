@@ -2,7 +2,7 @@
 //Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2025.2 (win64) Build 6299465 Fri Nov 14 19:35:11 GMT 2025
-//Date        : Sun May 31 20:00:14 2026
+//Date        : Tue Jun 16 23:37:11 2026
 //Host        : DESKTOP-KIRSTEN running 64-bit major release  (build 9200)
 //Command     : generate_target system_wrapper.bd
 //Design      : system_wrapper
@@ -83,7 +83,7 @@ module system_wrapper
   output dac_sel_o;
   output dac_wrt_o;
   inout [7:0]exp_n_tri_io;
-  inout [7:0]exp_p_tri_io;
+  output [1:0]exp_p_tri_io;
   output [7:0]led_o;
 
   wire [14:0]DDR_addr;
@@ -121,7 +121,7 @@ module system_wrapper
   wire dac_sel_o;
   wire dac_wrt_o;
   wire [7:0]exp_n_tri_io;
-  wire [7:0]exp_p_tri_io;
+  wire [1:0]exp_p_tri_io;
   wire [7:0]led_o;
 
   system system_i

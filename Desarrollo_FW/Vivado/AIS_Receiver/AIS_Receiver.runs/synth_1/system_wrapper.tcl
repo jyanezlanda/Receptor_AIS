@@ -57,6 +57,7 @@ if {$::dispatch::connected} {
 
 OPTRACE "synth_1" START { ROLLUP_AUTO }
 set_param general.usePosixSpawnForFork 1
+set_param chipscope.maxJobs 2
 OPTRACE "Creating in-memory project" START { }
 create_project -in_memory -part xc7z010clg400-1
 
@@ -78,14 +79,15 @@ read_mem D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/sources_1/imports/red-pitaya-n
 read_verilog -library xil_defaultlib {
   D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/sources_1/imports/red-pitaya-notes/cores/constant.v
   D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/sources_1/imports/red-pitaya-notes/cores/axis_red_pitaya_adc.v
+  D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/sources_1/imports/red-pitaya-notes/cores/axis_red_pitaya_dac.v
   D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/sources_1/imports/red-pitaya-notes/modules/inout_buffer.v
   D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/sources_1/imports/red-pitaya-notes/modules/input_buffer.v
   D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/sources_1/imports/red-pitaya-notes/modules/output_buffer.v
   D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/sources_1/imports/red-pitaya-notes/cores/axi_hub.v
   D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/sources_1/imports/red-pitaya-notes/cores/port_slicer.v
+  D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/sources_1/imports/red-pitaya-notes/cores/axis_constant.v
+  D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/sources_1/imports/red-pitaya-notes/cores/axis_lfsr.v
   D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/sources_1/imports/red-pitaya-notes/cores/axis_fifo.v
-  D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/sources_1/imports/red-pitaya-notes/cores/dds.v
-  D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/sources_1/imports/red-pitaya-notes/cores/dsp48.v
   D:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/hdl/system_wrapper.v
 }
 add_files D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/sources_1/bd/system/system.bd
@@ -94,18 +96,14 @@ set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver
 set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_pll_0_0/system_pll_0_0_ooc.xdc]
 set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_ps_0_0/system_ps_0_0.xdc]
 set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_rst_0_0/system_rst_0_0_board.xdc]
+set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_dds_0_0/system_dds_0_0_ooc.xdc]
+set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_mult_0_0/system_mult_0_0_ooc.xdc]
+set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_bcast_0_1/system_bcast_0_1_ooc.xdc]
 set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_cic_0_0/system_cic_0_0_ooc.xdc]
+set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_comb_0_1/system_comb_0_1_ooc.xdc]
 set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_conv_0_0/system_conv_0_0_ooc.xdc]
 set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_fir_0_0/constraints/fir_compiler_v7_2.xdc]
 set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_fir_0_0/system_fir_0_0_ooc.xdc]
-set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_subset_0_0/system_subset_0_0_ooc.xdc]
-set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_fir_1_0/constraints/fir_compiler_v7_2.xdc]
-set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_fir_1_0/system_fir_1_0_ooc.xdc]
-set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_subset_1_0/system_subset_1_0_ooc.xdc]
-set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_fp_0_0/system_fp_0_0_ooc.xdc]
-set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_conv_1_0/system_conv_1_0_ooc.xdc]
-set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_conv_2_0/system_conv_2_0_ooc.xdc]
-set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_cic_10_0/system_cic_10_0_ooc.xdc]
 set_property used_in_implementation false [get_files -all d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/system_ooc.xdc]
 
 OPTRACE "Adding files" END { }

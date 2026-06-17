@@ -3,6 +3,33 @@
 	"modules": {
 		"system": {
 			"proto_instances": {
+				"/adc_0/m_axis": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"TDATA": { "actual": "m_axis_tdata[31:0]"},
+						"TVALID": { "actual": "m_axis_tvalid"}
+					}
+				},
+				"/dac_0/s_axis": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"TDATA": { "actual": "s_axis_tdata[31:0]"},
+						"TREADY": { "actual": "s_axis_tready"},
+						"TVALID": { "actual": "s_axis_tvalid"}
+					}
+				},
+				"/dds_compiler_0/M_AXIS_DATA": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"ARESETN": { "actual": "aresetn"},
+						"TDATA": { "actual": "m_axis_data_tdata[31:0]"},
+						"TREADY": { "actual": "m_axis_data_tready"},
+						"TVALID": { "actual": "m_axis_data_tvalid"}
+					}
+				},
 				"/ps_0/M_AXI_GP0": {
 					"interface": "xilinx.com:interface:aximm:1.0",
 					"ports": {
@@ -47,7 +74,72 @@
 						"WVALID": { "actual": "M_AXI_GP0_WVALID"}
 					}
 				},
-				"/rx_0/axis_combiner_0/M_AXIS": {
+				"/rx_0/bcast_0/M00_AXIS": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"ARESETN": { "actual": "aresetn"},
+						"TDATA": { "actual": "m_axis_tdata[23:0]"},
+						"TVALID": { "actual": "m_axis_tvalid[0:0]"}
+					}
+				},
+				"/rx_0/bcast_0/M01_AXIS": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"ARESETN": { "actual": "aresetn"},
+						"TDATA": { "actual": "m_axis_tdata[47:24]"},
+						"TVALID": { "actual": "m_axis_tvalid[1:1]"}
+					}
+				},
+				"/rx_0/bcast_0/S_AXIS": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"ARESETN": { "actual": "aresetn"},
+						"TDATA": { "actual": "s_axis_tdata[63:0]"},
+						"TVALID": { "actual": "s_axis_tvalid"}
+					}
+				},
+				"/rx_0/cic_0/M_AXIS_DATA": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"ARESETN": { "actual": "aresetn"},
+						"TDATA": { "actual": "m_axis_data_tdata[31:0]"},
+						"TVALID": { "actual": "m_axis_data_tvalid"}
+					}
+				},
+				"/rx_0/cic_0/S_AXIS_DATA": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"ARESETN": { "actual": "aresetn"},
+						"TDATA": { "actual": "s_axis_data_tdata[23:0]"},
+						"TREADY": { "actual": "s_axis_data_tready"},
+						"TVALID": { "actual": "s_axis_data_tvalid"}
+					}
+				},
+				"/rx_0/cic_1/M_AXIS_DATA": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"ARESETN": { "actual": "aresetn"},
+						"TDATA": { "actual": "m_axis_data_tdata[31:0]"},
+						"TVALID": { "actual": "m_axis_data_tvalid"}
+					}
+				},
+				"/rx_0/cic_1/S_AXIS_DATA": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"ARESETN": { "actual": "aresetn"},
+						"TDATA": { "actual": "s_axis_data_tdata[23:0]"},
+						"TREADY": { "actual": "s_axis_data_tready"},
+						"TVALID": { "actual": "s_axis_data_tvalid"}
+					}
+				},
+				"/rx_0/comb_0/M_AXIS": {
 					"interface": "xilinx.com:interface:axis:1.0",
 					"ports": {
 						"ACLK": { "actual": "aclk"},
@@ -57,7 +149,7 @@
 						"TVALID": { "actual": "m_axis_tvalid"}
 					}
 				},
-				"/rx_0/axis_combiner_0/S00_AXIS": {
+				"/rx_0/comb_0/S00_AXIS": {
 					"interface": "xilinx.com:interface:axis:1.0",
 					"ports": {
 						"ACLK": { "actual": "aclk"},
@@ -67,7 +159,7 @@
 						"TVALID": { "actual": "s_axis_tvalid[0:0]"}
 					}
 				},
-				"/rx_0/axis_combiner_0/S01_AXIS": {
+				"/rx_0/comb_0/S01_AXIS": {
 					"interface": "xilinx.com:interface:axis:1.0",
 					"ports": {
 						"ACLK": { "actual": "aclk"},
@@ -75,24 +167,6 @@
 						"TDATA": { "actual": "s_axis_tdata[63:32]"},
 						"TREADY": { "actual": "s_axis_tready[1:1]"},
 						"TVALID": { "actual": "s_axis_tvalid[1:1]"}
-					}
-				},
-				"/rx_0/cic_I/M_AXIS_DATA": {
-					"interface": "xilinx.com:interface:axis:1.0",
-					"ports": {
-						"ACLK": { "actual": "aclk"},
-						"ARESETN": { "actual": "aresetn"},
-						"TDATA": { "actual": "m_axis_data_tdata[31:0]"},
-						"TVALID": { "actual": "m_axis_data_tvalid"}
-					}
-				},
-				"/rx_0/cic_Q/M_AXIS_DATA": {
-					"interface": "xilinx.com:interface:axis:1.0",
-					"ports": {
-						"ACLK": { "actual": "aclk"},
-						"ARESETN": { "actual": "aresetn"},
-						"TDATA": { "actual": "m_axis_data_tdata[31:0]"},
-						"TVALID": { "actual": "m_axis_data_tvalid"}
 					}
 				},
 				"/rx_0/conv_0/M_AXIS": {
@@ -115,27 +189,7 @@
 						"TVALID": { "actual": "s_axis_tvalid"}
 					}
 				},
-				"/rx_0/conv_1/M_AXIS": {
-					"interface": "xilinx.com:interface:axis:1.0",
-					"ports": {
-						"ACLK": { "actual": "aclk"},
-						"ARESETN": { "actual": "aresetn"},
-						"TDATA": { "actual": "m_axis_tdata[511:0]"},
-						"TREADY": { "actual": "m_axis_tready"},
-						"TVALID": { "actual": "m_axis_tvalid"}
-					}
-				},
-				"/rx_0/conv_1/S_AXIS": {
-					"interface": "xilinx.com:interface:axis:1.0",
-					"ports": {
-						"ACLK": { "actual": "aclk"},
-						"ARESETN": { "actual": "aresetn"},
-						"TDATA": { "actual": "s_axis_tdata[31:0]"},
-						"TREADY": { "actual": "s_axis_tready"},
-						"TVALID": { "actual": "s_axis_tvalid"}
-					}
-				},
-				"/rx_0/conv_2/M_AXIS": {
+				"/rx_0/fifo_0/m_axis": {
 					"interface": "xilinx.com:interface:axis:1.0",
 					"ports": {
 						"ACLK": { "actual": "aclk"},
@@ -145,32 +199,12 @@
 						"TVALID": { "actual": "m_axis_tvalid"}
 					}
 				},
-				"/rx_0/conv_2/S_AXIS": {
-					"interface": "xilinx.com:interface:axis:1.0",
-					"ports": {
-						"ACLK": { "actual": "aclk"},
-						"ARESETN": { "actual": "aresetn"},
-						"TDATA": { "actual": "s_axis_tdata[511:0]"},
-						"TREADY": { "actual": "s_axis_tready"},
-						"TVALID": { "actual": "s_axis_tvalid"}
-					}
-				},
-				"/rx_0/fifo_0/m_axis": {
-					"interface": "xilinx.com:interface:axis:1.0",
-					"ports": {
-						"ACLK": { "actual": "aclk"},
-						"ARESETN": { "actual": "aresetn"},
-						"TDATA": { "actual": "m_axis_tdata[511:0]"},
-						"TREADY": { "actual": "m_axis_tready"},
-						"TVALID": { "actual": "m_axis_tvalid"}
-					}
-				},
 				"/rx_0/fifo_0/s_axis": {
 					"interface": "xilinx.com:interface:axis:1.0",
 					"ports": {
 						"ACLK": { "actual": "aclk"},
 						"ARESETN": { "actual": "aresetn"},
-						"TDATA": { "actual": "s_axis_tdata[511:0]"},
+						"TDATA": { "actual": "s_axis_tdata[31:0]"},
 						"TREADY": { "actual": "s_axis_tready"},
 						"TVALID": { "actual": "s_axis_tvalid"}
 					}
@@ -192,45 +226,6 @@
 						"TDATA": { "actual": "s_axis_data_tdata[31:0]"},
 						"TREADY": { "actual": "s_axis_data_tready"},
 						"TVALID": { "actual": "s_axis_data_tvalid"}
-					}
-				},
-				"/rx_0/fir_1/M_AXIS_DATA": {
-					"interface": "xilinx.com:interface:axis:1.0",
-					"ports": {
-						"ACLK": { "actual": "aclk"},
-						"ARESETN": { "actual": "aresetn"},
-						"TDATA": { "actual": "m_axis_data_tdata[39:0]"},
-						"TVALID": { "actual": "m_axis_data_tvalid"}
-					}
-				},
-				"/rx_0/fir_1/S_AXIS_DATA": {
-					"interface": "xilinx.com:interface:axis:1.0",
-					"ports": {
-						"ACLK": { "actual": "aclk"},
-						"ARESETN": { "actual": "aresetn"},
-						"TDATA": { "actual": "s_axis_data_tdata[23:0]"},
-						"TREADY": { "actual": "s_axis_data_tready"},
-						"TVALID": { "actual": "s_axis_data_tvalid"}
-					}
-				},
-				"/rx_0/fp_0/M_AXIS_RESULT": {
-					"interface": "xilinx.com:interface:axis:1.0",
-					"ports": {
-						"ACLK": { "actual": "aclk"},
-						"ARESETN": { "actual": "aresetn"},
-						"TDATA": { "actual": "m_axis_result_tdata[31:0]"},
-						"TREADY": { "actual": "m_axis_result_tready"},
-						"TVALID": { "actual": "m_axis_result_tvalid"}
-					}
-				},
-				"/rx_0/fp_0/S_AXIS_A": {
-					"interface": "xilinx.com:interface:axis:1.0",
-					"ports": {
-						"ACLK": { "actual": "aclk"},
-						"ARESETN": { "actual": "aresetn"},
-						"TDATA": { "actual": "s_axis_a_tdata[31:0]"},
-						"TREADY": { "actual": "s_axis_a_tready"},
-						"TVALID": { "actual": "s_axis_a_tvalid"}
 					}
 				},
 				"/rx_0/hub_0/s00_axis": {
@@ -272,6 +267,72 @@
 						"WVALID": { "actual": "s_axi_wvalid"}
 					}
 				},
+				"/rx_0/lfsr_0/m_axis": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"ARESETN": { "actual": "aresetn"},
+						"TDATA": { "actual": "m_axis_tdata[63:0]"},
+						"TREADY": { "actual": "m_axis_tready"},
+						"TVALID": { "actual": "m_axis_tvalid"}
+					}
+				},
+				"/rx_0/mult_0/M_AXIS_DOUT": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"TDATA": { "actual": "m_axis_dout_tdata[63:0]"},
+						"TVALID": { "actual": "m_axis_dout_tvalid"}
+					}
+				},
+				"/rx_0/mult_0/S_AXIS_A": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"TDATA": { "actual": "s_axis_a_tdata[31:0]"},
+						"TVALID": { "actual": "s_axis_a_tvalid"}
+					}
+				},
+				"/rx_0/mult_0/S_AXIS_B": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"TDATA": { "actual": "s_axis_b_tdata[47:0]"},
+						"TVALID": { "actual": "s_axis_b_tvalid"}
+					}
+				},
+				"/rx_0/mult_0/S_AXIS_CTRL": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"TDATA": { "actual": "s_axis_ctrl_tdata[7:0]"},
+						"TVALID": { "actual": "s_axis_ctrl_tvalid"}
+					}
+				},
+				"/rx_0/osc_0/M_AXIS_DATA": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"TDATA": { "actual": "m_axis_data_tdata[47:0]"},
+						"TVALID": { "actual": "m_axis_data_tvalid"}
+					}
+				},
+				"/rx_0/osc_0/S_AXIS_PHASE": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"TDATA": { "actual": "s_axis_phase_tdata[39:0]"},
+						"TVALID": { "actual": "s_axis_phase_tvalid"}
+					}
+				},
+				"/rx_0/phase_0/m_axis": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"TDATA": { "actual": "m_axis_tdata[39:0]"},
+						"TVALID": { "actual": "m_axis_tvalid"}
+					}
+				},
 				"/rx_0/s_axi": {
 					"interface": "xilinx.com:interface:aximm:1.0",
 					"ports": {
@@ -301,40 +362,12 @@
 						"WVALID": { "actual": "s_axi_wvalid"}
 					}
 				},
-				"/rx_0/subset_0/M_AXIS": {
+				"/rx_0/s_axis_adc": {
 					"interface": "xilinx.com:interface:axis:1.0",
 					"ports": {
 						"ACLK": { "actual": "aclk"},
-						"ARESETN": { "actual": "aresetn"},
-						"TDATA": { "actual": "m_axis_tdata[23:0]"},
-						"TVALID": { "actual": "m_axis_tvalid"}
-					}
-				},
-				"/rx_0/subset_0/S_AXIS": {
-					"interface": "xilinx.com:interface:axis:1.0",
-					"ports": {
-						"ACLK": { "actual": "aclk"},
-						"ARESETN": { "actual": "aresetn"},
-						"TDATA": { "actual": "s_axis_tdata[31:0]"},
-						"TVALID": { "actual": "s_axis_tvalid"}
-					}
-				},
-				"/rx_0/subset_1/M_AXIS": {
-					"interface": "xilinx.com:interface:axis:1.0",
-					"ports": {
-						"ACLK": { "actual": "aclk"},
-						"ARESETN": { "actual": "aresetn"},
-						"TDATA": { "actual": "m_axis_tdata[31:0]"},
-						"TVALID": { "actual": "m_axis_tvalid"}
-					}
-				},
-				"/rx_0/subset_1/S_AXIS": {
-					"interface": "xilinx.com:interface:axis:1.0",
-					"ports": {
-						"ACLK": { "actual": "aclk"},
-						"ARESETN": { "actual": "aresetn"},
-						"TDATA": { "actual": "s_axis_tdata[39:0]"},
-						"TVALID": { "actual": "s_axis_tvalid"}
+						"TDATA": { "actual": "s_axis_adc_tdata[31:0]"},
+						"TVALID": { "actual": "s_axis_adc_tvalid"}
 					}
 				}
 			}

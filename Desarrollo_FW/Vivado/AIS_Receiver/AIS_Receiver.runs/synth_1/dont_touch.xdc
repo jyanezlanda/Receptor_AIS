@@ -23,17 +23,38 @@ set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_rst_
 # IP: bd/system/ip/system_adc_0_0/system_adc_0_0.xci
 set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_adc_0_0 || ORIG_REF_NAME==system_adc_0_0} -quiet] -quiet
 
+# IP: bd/system/ip/system_dac_0_0/system_dac_0_0.xci
+set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_dac_0_0 || ORIG_REF_NAME==system_dac_0_0} -quiet] -quiet
+
 # IP: bd/system/ip/system_hub_0_0/system_hub_0_0.xci
 set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_hub_0_0 || ORIG_REF_NAME==system_hub_0_0} -quiet] -quiet
 
 # IP: bd/system/ip/system_slice_0_0/system_slice_0_0.xci
 set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_slice_0_0 || ORIG_REF_NAME==system_slice_0_0} -quiet] -quiet
 
-# IP: bd/system/ip/system_const_0_1/system_const_0_1.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_const_0_1 || ORIG_REF_NAME==system_const_0_1} -quiet] -quiet
+# IP: bd/system/ip/system_slice_1_0/system_slice_1_0.xci
+set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_slice_1_0 || ORIG_REF_NAME==system_slice_1_0} -quiet] -quiet
+
+# IP: bd/system/ip/system_phase_0_0/system_phase_0_0.xci
+set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_phase_0_0 || ORIG_REF_NAME==system_phase_0_0} -quiet] -quiet
+
+# IP: bd/system/ip/system_dds_0_0/system_dds_0_0.xci
+set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_dds_0_0 || ORIG_REF_NAME==system_dds_0_0} -quiet] -quiet
+
+# IP: bd/system/ip/system_lfsr_0_0/system_lfsr_0_0.xci
+set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_lfsr_0_0 || ORIG_REF_NAME==system_lfsr_0_0} -quiet] -quiet
+
+# IP: bd/system/ip/system_mult_0_0/system_mult_0_0.xci
+set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_mult_0_0 || ORIG_REF_NAME==system_mult_0_0} -quiet] -quiet
+
+# IP: bd/system/ip/system_bcast_0_1/system_bcast_0_1.xci
+set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_bcast_0_1 || ORIG_REF_NAME==system_bcast_0_1} -quiet] -quiet
 
 # IP: bd/system/ip/system_cic_0_0/system_cic_0_0.xci
 set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_cic_0_0 || ORIG_REF_NAME==system_cic_0_0} -quiet] -quiet
+
+# IP: bd/system/ip/system_comb_0_1/system_comb_0_1.xci
+set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_comb_0_1 || ORIG_REF_NAME==system_comb_0_1} -quiet] -quiet
 
 # IP: bd/system/ip/system_conv_0_0/system_conv_0_0.xci
 set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_conv_0_0 || ORIG_REF_NAME==system_conv_0_0} -quiet] -quiet
@@ -41,83 +62,14 @@ set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_conv
 # IP: bd/system/ip/system_fir_0_0/system_fir_0_0.xci
 set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_fir_0_0 || ORIG_REF_NAME==system_fir_0_0} -quiet] -quiet
 
-# IP: bd/system/ip/system_subset_0_0/system_subset_0_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_subset_0_0 || ORIG_REF_NAME==system_subset_0_0} -quiet] -quiet
-
-# IP: bd/system/ip/system_fir_1_0/system_fir_1_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_fir_1_0 || ORIG_REF_NAME==system_fir_1_0} -quiet] -quiet
-
-# IP: bd/system/ip/system_subset_1_0/system_subset_1_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_subset_1_0 || ORIG_REF_NAME==system_subset_1_0} -quiet] -quiet
-
-# IP: bd/system/ip/system_fp_0_0/system_fp_0_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_fp_0_0 || ORIG_REF_NAME==system_fp_0_0} -quiet] -quiet
-
-# IP: bd/system/ip/system_conv_1_0/system_conv_1_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_conv_1_0 || ORIG_REF_NAME==system_conv_1_0} -quiet] -quiet
-
 # IP: bd/system/ip/system_fifo_0_0/system_fifo_0_0.xci
 set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_fifo_0_0 || ORIG_REF_NAME==system_fifo_0_0} -quiet] -quiet
 
-# IP: bd/system/ip/system_conv_2_0/system_conv_2_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_conv_2_0 || ORIG_REF_NAME==system_conv_2_0} -quiet] -quiet
+# IP: bd/system/ip/system_cic_0_1/system_cic_0_1.xci
+set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_cic_0_1 || ORIG_REF_NAME==system_cic_0_1} -quiet] -quiet
 
-# IP: bd/system/ip/system_cic_10_0/system_cic_10_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_cic_10_0 || ORIG_REF_NAME==system_cic_10_0} -quiet] -quiet
-
-# IP: bd/system/ip/system_axis_combiner_0_0/system_axis_combiner_0_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_axis_combiner_0_0 || ORIG_REF_NAME==system_axis_combiner_0_0} -quiet] -quiet
-
-# IP: bd/system/ip/system_port_slicer_0_0/system_port_slicer_0_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_port_slicer_0_0 || ORIG_REF_NAME==system_port_slicer_0_0} -quiet] -quiet
-
-# IP: bd/system/ip/system_adc_slicer_0_0/system_adc_slicer_0_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_adc_slicer_0_0 || ORIG_REF_NAME==system_adc_slicer_0_0} -quiet] -quiet
-
-# IP: bd/system/ip/system_dds_0_0/system_dds_0_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_dds_0_0 || ORIG_REF_NAME==system_dds_0_0} -quiet] -quiet
-
-# IP: bd/system/ip/system_port_slicer_0_1/system_port_slicer_0_1.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_port_slicer_0_1 || ORIG_REF_NAME==system_port_slicer_0_1} -quiet] -quiet
-
-# IP: bd/system/ip/system_dds_0_1/system_dds_0_1.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_dds_0_1 || ORIG_REF_NAME==system_dds_0_1} -quiet] -quiet
-
-# IP: bd/system/ip/system_dsp48_0_0/system_dsp48_0_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_dsp48_0_0 || ORIG_REF_NAME==system_dsp48_0_0} -quiet] -quiet
-
-# IP: bd/system/ip/system_port_slicer_0_2/system_port_slicer_0_2.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_port_slicer_0_2 || ORIG_REF_NAME==system_port_slicer_0_2} -quiet] -quiet
-
-# IP: bd/system/ip/system_dds_slicer_0_0/system_dds_slicer_0_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_dds_slicer_0_0 || ORIG_REF_NAME==system_dds_slicer_0_0} -quiet] -quiet
-
-# IP: bd/system/ip/system_dsp48_0_1/system_dsp48_0_1.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_dsp48_0_1 || ORIG_REF_NAME==system_dsp48_0_1} -quiet] -quiet
-
-# IP: bd/system/ip/system_constant_0_0/system_constant_0_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_constant_0_0 || ORIG_REF_NAME==system_constant_0_0} -quiet] -quiet
-
-# IP: bd/system/ip/system_xlconcat_0_0/system_xlconcat_0_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_xlconcat_0_0 || ORIG_REF_NAME==system_xlconcat_0_0} -quiet] -quiet
-
-# IP: bd/system/ip/system_dds_slicer_cos_0_0/system_dds_slicer_cos_0_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_dds_slicer_cos_0_0 || ORIG_REF_NAME==system_dds_slicer_cos_0_0} -quiet] -quiet
-
-# IP: bd/system/ip/system_dsp48_0_2/system_dsp48_0_2.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_dsp48_0_2 || ORIG_REF_NAME==system_dsp48_0_2} -quiet] -quiet
-
-# IP: bd/system/ip/system_mult_I_cos_0/system_mult_I_cos_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_mult_I_cos_0 || ORIG_REF_NAME==system_mult_I_cos_0} -quiet] -quiet
-
-# IP: bd/system/ip/system_port_slicer_0_3/system_port_slicer_0_3.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_port_slicer_0_3 || ORIG_REF_NAME==system_port_slicer_0_3} -quiet] -quiet
-
-# IP: bd/system/ip/system_c_addsub_0_0/system_c_addsub_0_0.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_c_addsub_0_0 || ORIG_REF_NAME==system_c_addsub_0_0} -quiet] -quiet
-
-# IP: bd/system/ip/system_c_addsub_0_1/system_c_addsub_0_1.xci
-set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_c_addsub_0_1 || ORIG_REF_NAME==system_c_addsub_0_1} -quiet] -quiet
+# IP: bd/system/ip/system_dds_compiler_0_0/system_dds_compiler_0_0.xci
+set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_dds_compiler_0_0 || ORIG_REF_NAME==system_dds_compiler_0_0} -quiet] -quiet
 
 # XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_pll_0_0/system_pll_0_0_board.xdc
 set_property KEEP_HIERARCHY SOFT [get_cells [split [join [get_cells -hier -filter {REF_NAME==system_pll_0_0 || ORIG_REF_NAME==system_pll_0_0} -quiet] {/inst } ]/inst ] -quiet] -quiet
@@ -133,7 +85,15 @@ set_property KEEP_HIERARCHY SOFT [get_cells [split [join [get_cells -hier -filte
 # XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_rst_0_0/system_rst_0_0_board.xdc
 set_property KEEP_HIERARCHY SOFT [get_cells [split [join [get_cells -hier -filter {REF_NAME==system_rst_0_0 || ORIG_REF_NAME==system_rst_0_0} -quiet] {/U0 } ]/U0 ] -quiet] -quiet
 
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_dds_0_0/system_dds_0_0_ooc.xdc
+
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_mult_0_0/system_mult_0_0_ooc.xdc
+
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_bcast_0_1/system_bcast_0_1_ooc.xdc
+
 # XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_cic_0_0/system_cic_0_0_ooc.xdc
+
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_comb_0_1/system_comb_0_1_ooc.xdc
 
 # XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_conv_0_0/system_conv_0_0_ooc.xdc
 
@@ -141,22 +101,5 @@ set_property KEEP_HIERARCHY SOFT [get_cells [split [join [get_cells -hier -filte
 set_property KEEP_HIERARCHY SOFT [get_cells [split [join [get_cells -hier -filter {REF_NAME==system_fir_0_0 || ORIG_REF_NAME==system_fir_0_0} -quiet] {/U0 } ]/U0 ] -quiet] -quiet
 
 # XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_fir_0_0/system_fir_0_0_ooc.xdc
-
-# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_subset_0_0/system_subset_0_0_ooc.xdc
-
-# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_fir_1_0/constraints/fir_compiler_v7_2.xdc
-set_property KEEP_HIERARCHY SOFT [get_cells [split [join [get_cells -hier -filter {REF_NAME==system_fir_1_0 || ORIG_REF_NAME==system_fir_1_0} -quiet] {/U0 } ]/U0 ] -quiet] -quiet
-
-# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_fir_1_0/system_fir_1_0_ooc.xdc
-
-# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_subset_1_0/system_subset_1_0_ooc.xdc
-
-# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_fp_0_0/system_fp_0_0_ooc.xdc
-
-# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_conv_1_0/system_conv_1_0_ooc.xdc
-
-# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_conv_2_0/system_conv_2_0_ooc.xdc
-
-# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_cic_10_0/system_cic_10_0_ooc.xdc
 
 # XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/system_ooc.xdc

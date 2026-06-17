@@ -100,9 +100,9 @@ system_sv your_instance_name (
   .dac_sel_o(dac_sel_o), // output wire dac_sel_o
   .dac_wrt_o(dac_wrt_o), // output wire dac_wrt_o
   .dac_pwm_o(dac_pwm_o), // output wire [3:0] dac_pwm_o
-  .exp_p_tri_io(exp_p_tri_io), // inout wire [7:0] exp_p_tri_io
   .exp_n_tri_io(exp_n_tri_io), // inout wire [7:0] exp_n_tri_io
-  .led_o(led_o) // output wire [7:0] led_o
+  .led_o(led_o), // output wire [7:0] led_o
+  .exp_p_tri_io(exp_p_tri_io) // output wire [1:0] exp_p_tri_io
 );
 // INST_TAG_END ------  End cut for WRAPPER INSTANTIATION Template  ------
 

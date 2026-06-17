@@ -100,7 +100,7 @@ system_ps_0_0_sc::system_ps_0_0_sc(const sc_core::sc_module_name& nm) : sc_core:
     model_param_props.addLong("C_TRACE_INTERNAL_WIDTH", "2");
     model_param_props.addLong("C_USE_AXI_NONSECURE", "0");
     model_param_props.addLong("C_USE_M_AXI_GP0", "1");
-    model_param_props.addLong("C_USE_M_AXI_GP1", "0");
+    model_param_props.addLong("C_USE_M_AXI_GP1", "1");
     model_param_props.addLong("C_USE_S_AXI_GP0", "0");
     model_param_props.addLong("C_USE_S_AXI_GP1", "0");
     model_param_props.addLong("C_USE_S_AXI_HP0", "0");
@@ -124,6 +124,8 @@ system_ps_0_0_sc::system_ps_0_0_sc(const sc_core::sc_module_name& nm) : sc_core:
   // initialize AXI sockets
   M_AXI_GP0_rd_socket = mp_impl->M_AXI_GP0_rd_socket;
   M_AXI_GP0_wr_socket = mp_impl->M_AXI_GP0_wr_socket;
+  M_AXI_GP1_rd_socket = mp_impl->M_AXI_GP1_rd_socket;
+  M_AXI_GP1_wr_socket = mp_impl->M_AXI_GP1_wr_socket;
 }
 
 system_ps_0_0_sc::~system_ps_0_0_sc()

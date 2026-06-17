@@ -2,7 +2,7 @@
 //Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2025.2 (win64) Build 6299465 Fri Nov 14 19:35:11 GMT 2025
-//Date        : Sun May 31 20:00:13 2026
+//Date        : Tue Jun 16 23:37:11 2026
 //Host        : DESKTOP-KIRSTEN running 64-bit major release  (build 9200)
 //Command     : generate_target system.bd
 //Design      : system
@@ -10,10 +10,12 @@
 //--------------------------------------------------------------------------------
 `timescale 1 ps / 1 ps
 
+/* Hace la multiplicacion entre I y Q de la senal del ADC y el oscilador local complejo
+FIFO para guardar los datos
+CIC decimador -> 1Msps */
 module rx_0_imp_178AHDX
    (aclk,
     aresetn,
-    din,
     s_axi_araddr,
     s_axi_arid,
     s_axi_arlen,
@@ -35,10 +37,11 @@ module rx_0_imp_178AHDX
     s_axi_wlast,
     s_axi_wready,
     s_axi_wstrb,
-    s_axi_wvalid);
+    s_axi_wvalid,
+    s_axis_adc_tdata,
+    s_axis_adc_tvalid);
   input aclk;
   input aresetn;
-  input [31:0]din;
   input [31:0]s_axi_araddr;
   input [11:0]s_axi_arid;
   input [3:0]s_axi_arlen;
@@ -61,54 +64,40 @@ module rx_0_imp_178AHDX
   output s_axi_wready;
   input [3:0]s_axi_wstrb;
   input s_axi_wvalid;
+  input [31:0]s_axis_adc_tdata;
+  input s_axis_adc_tvalid;
 
   wire aclk;
-  wire [13:0]adc_slicer_I_dout;
-  wire [13:0]adc_slicer_Q_dout;
   wire aresetn;
-  wire [63:0]axis_combiner_0_M_AXIS_TDATA;
-  wire axis_combiner_0_M_AXIS_TREADY;
-  wire axis_combiner_0_M_AXIS_TVALID;
-  wire [24:0]c_addsub_0_S;
-  wire [24:0]c_addsub_1_S;
-  wire [31:0]cic_I_M_AXIS_DATA_TDATA;
-  wire cic_I_M_AXIS_DATA_TVALID;
-  wire [31:0]cic_Q_M_AXIS_DATA_TDATA;
-  wire cic_Q_M_AXIS_DATA_TVALID;
-  wire [0:0]const_0_dout;
+  wire [23:0]bcast_0_M00_AXIS_TDATA;
+  wire [0:0]bcast_0_M00_AXIS_TVALID;
+  wire [47:24]bcast_0_M01_AXIS_TDATA;
+  wire [1:1]bcast_0_M01_AXIS_TVALID;
+  wire [31:0]cic_0_M_AXIS_DATA_TDATA;
+  wire cic_0_M_AXIS_DATA_TVALID;
+  wire [31:0]cic_1_M_AXIS_DATA_TDATA;
+  wire cic_1_M_AXIS_DATA_TVALID;
+  wire [63:0]comb_0_M_AXIS_TDATA;
+  wire comb_0_M_AXIS_TREADY;
+  wire comb_0_M_AXIS_TVALID;
   wire [31:0]conv_0_M_AXIS_TDATA;
   wire conv_0_M_AXIS_TREADY;
   wire conv_0_M_AXIS_TVALID;
-  wire [511:0]conv_1_M_AXIS_TDATA;
-  wire conv_1_M_AXIS_TREADY;
-  wire conv_1_M_AXIS_TVALID;
-  wire [31:0]conv_2_M_AXIS_TDATA;
-  wire conv_2_M_AXIS_TREADY;
-  wire conv_2_M_AXIS_TVALID;
-  wire [47:0]dds_0_dout;
-  wire [47:0]dds_1_dout;
-  wire [23:0]dds_slicer_1_dout;
-  wire [23:0]dds_slicer_cos_2_dout;
-  wire [23:0]dds_slicer_sin_1_dout;
-  wire [31:0]din;
-  wire [511:0]fifo_0_m_axis_TDATA;
-  wire fifo_0_m_axis_TREADY;
-  wire fifo_0_m_axis_TVALID;
-  wire [15:0]fifo_0_read_count;
+  wire [47:0]dds_0_M_AXIS_DATA_TDATA;
+  wire dds_0_M_AXIS_DATA_TVALID;
   wire [31:0]fir_0_M_AXIS_DATA_TDATA;
   wire fir_0_M_AXIS_DATA_TVALID;
-  wire [39:0]fir_1_M_AXIS_DATA_TDATA;
-  wire fir_1_M_AXIS_DATA_TVALID;
-  wire [31:0]fp_0_M_AXIS_RESULT_TDATA;
-  wire fp_0_M_AXIS_RESULT_TREADY;
-  wire fp_0_M_AXIS_RESULT_TVALID;
   wire [63:0]hub_0_cfg_data;
-  wire [23:0]mult_I_cos_P;
-  wire [23:0]mult_I_sin_P;
-  wire [23:0]mult_Q_asin_P;
-  wire [23:0]mult_Q_cos_P;
-  wire [31:0]port_slicer_0_dout;
-  wire [23:0]port_slicer_0_dout1;
+  wire [63:0]lfsr_0_m_axis_TDATA;
+  wire lfsr_0_m_axis_TVALID;
+  wire [63:0]mult_0_M_AXIS_DOUT_TDATA;
+  wire mult_0_M_AXIS_DOUT_TVALID;
+  wire [39:0]phase_0_m_axis_TDATA;
+  wire phase_0_m_axis_TVALID;
+  wire [31:0]rx_0_m_axis_TDATA;
+  wire rx_0_m_axis_TREADY;
+  wire rx_0_m_axis_TVALID;
+  wire [15:0]rx_0_read_count;
   wire [31:0]s_axi_araddr;
   wire [11:0]s_axi_arid;
   wire [3:0]s_axi_arlen;
@@ -131,117 +120,60 @@ module rx_0_imp_178AHDX
   wire s_axi_wready;
   wire [3:0]s_axi_wstrb;
   wire s_axi_wvalid;
+  wire [31:0]s_axis_adc_tdata;
+  wire s_axis_adc_tvalid;
   wire [0:0]slice_0_dout;
-  wire [23:0]subset_0_M_AXIS_TDATA;
-  wire subset_0_M_AXIS_TVALID;
-  wire [31:0]subset_1_M_AXIS_TDATA;
-  wire subset_1_M_AXIS_TVALID;
+  wire [39:0]slice_1_dout;
 
-  system_port_slicer_0_0 adc_slicer_I
-       (.din(din),
-        .dout(adc_slicer_I_dout));
-  system_adc_slicer_0_0 adc_slicer_Q
-       (.din(din),
-        .dout(adc_slicer_Q_dout));
-  system_axis_combiner_0_0 axis_combiner_0
+  system_bcast_0_1 bcast_0
        (.aclk(aclk),
         .aresetn(aresetn),
-        .m_axis_tdata(axis_combiner_0_M_AXIS_TDATA),
-        .m_axis_tready(axis_combiner_0_M_AXIS_TREADY),
-        .m_axis_tvalid(axis_combiner_0_M_AXIS_TVALID),
-        .s_axis_tdata({cic_Q_M_AXIS_DATA_TDATA,cic_I_M_AXIS_DATA_TDATA}),
-        .s_axis_tvalid({cic_Q_M_AXIS_DATA_TVALID,cic_I_M_AXIS_DATA_TVALID}));
-  system_c_addsub_0_0 c_addsub_0
-       (.A(mult_I_cos_P),
-        .B(mult_I_sin_P),
-        .CLK(aclk),
-        .S(c_addsub_0_S));
-  system_c_addsub_0_1 c_addsub_1
-       (.A(mult_Q_cos_P),
-        .B(mult_Q_asin_P),
-        .CLK(aclk),
-        .S(c_addsub_1_S));
-  system_port_slicer_0_1 cfg_slicer_0
-       (.din(hub_0_cfg_data),
-        .dout(port_slicer_0_dout));
-  system_cic_0_0 cic_I
+        .m_axis_tdata({bcast_0_M01_AXIS_TDATA,bcast_0_M00_AXIS_TDATA}),
+        .m_axis_tvalid({bcast_0_M01_AXIS_TVALID,bcast_0_M00_AXIS_TVALID}),
+        .s_axis_tdata(mult_0_M_AXIS_DOUT_TDATA),
+        .s_axis_tvalid(mult_0_M_AXIS_DOUT_TVALID));
+  system_cic_0_0 cic_0
        (.aclk(aclk),
         .aresetn(aresetn),
-        .m_axis_data_tdata(cic_I_M_AXIS_DATA_TDATA),
-        .m_axis_data_tvalid(cic_I_M_AXIS_DATA_TVALID),
-        .s_axis_data_tdata({1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,c_addsub_0_S}),
-        .s_axis_data_tvalid(const_0_dout));
-  system_cic_10_0 cic_Q
+        .m_axis_data_tdata(cic_0_M_AXIS_DATA_TDATA),
+        .m_axis_data_tvalid(cic_0_M_AXIS_DATA_TVALID),
+        .s_axis_data_tdata(bcast_0_M00_AXIS_TDATA),
+        .s_axis_data_tvalid(bcast_0_M00_AXIS_TVALID));
+  system_cic_0_1 cic_1
        (.aclk(aclk),
         .aresetn(aresetn),
-        .m_axis_data_tdata(cic_Q_M_AXIS_DATA_TDATA),
-        .m_axis_data_tvalid(cic_Q_M_AXIS_DATA_TVALID),
-        .s_axis_data_tdata({1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,c_addsub_1_S}),
-        .s_axis_data_tvalid(const_0_dout));
-  system_const_0_1 const_0
-       (.dout(const_0_dout));
+        .m_axis_data_tdata(cic_1_M_AXIS_DATA_TDATA),
+        .m_axis_data_tvalid(cic_1_M_AXIS_DATA_TVALID),
+        .s_axis_data_tdata(bcast_0_M01_AXIS_TDATA),
+        .s_axis_data_tvalid(bcast_0_M01_AXIS_TVALID));
+  system_comb_0_1 comb_0
+       (.aclk(aclk),
+        .aresetn(aresetn),
+        .m_axis_tdata(comb_0_M_AXIS_TDATA),
+        .m_axis_tready(comb_0_M_AXIS_TREADY),
+        .m_axis_tvalid(comb_0_M_AXIS_TVALID),
+        .s_axis_tdata({cic_1_M_AXIS_DATA_TDATA,cic_0_M_AXIS_DATA_TDATA}),
+        .s_axis_tvalid({cic_1_M_AXIS_DATA_TVALID,cic_0_M_AXIS_DATA_TVALID}));
   system_conv_0_0 conv_0
        (.aclk(aclk),
         .aresetn(aresetn),
         .m_axis_tdata(conv_0_M_AXIS_TDATA),
         .m_axis_tready(conv_0_M_AXIS_TREADY),
         .m_axis_tvalid(conv_0_M_AXIS_TVALID),
-        .s_axis_tdata(axis_combiner_0_M_AXIS_TDATA),
-        .s_axis_tready(axis_combiner_0_M_AXIS_TREADY),
-        .s_axis_tvalid(axis_combiner_0_M_AXIS_TVALID));
-  system_conv_1_0 conv_1
-       (.aclk(aclk),
-        .aresetn(aresetn),
-        .m_axis_tdata(conv_1_M_AXIS_TDATA),
-        .m_axis_tready(conv_1_M_AXIS_TREADY),
-        .m_axis_tvalid(conv_1_M_AXIS_TVALID),
-        .s_axis_tdata(fp_0_M_AXIS_RESULT_TDATA),
-        .s_axis_tready(fp_0_M_AXIS_RESULT_TREADY),
-        .s_axis_tvalid(fp_0_M_AXIS_RESULT_TVALID));
-  system_conv_2_0 conv_2
-       (.aclk(aclk),
-        .aresetn(slice_0_dout),
-        .m_axis_tdata(conv_2_M_AXIS_TDATA),
-        .m_axis_tready(conv_2_M_AXIS_TREADY),
-        .m_axis_tvalid(conv_2_M_AXIS_TVALID),
-        .s_axis_tdata(fifo_0_m_axis_TDATA),
-        .s_axis_tready(fifo_0_m_axis_TREADY),
-        .s_axis_tvalid(fifo_0_m_axis_TVALID));
-  system_dds_0_0 dds_0
-       (.aclk(aclk),
-        .aresetn(aresetn),
-        .dout(dds_0_dout),
-        .pinc(port_slicer_0_dout));
-  system_dds_0_1 dds_1
-       (.aclk(aclk),
-        .aresetn(aresetn),
-        .dout(dds_1_dout),
-        .pinc(port_slicer_0_dout));
-  system_port_slicer_0_3 dds_slicer_asin_1
-       (.din(dds_1_dout),
-        .dout(dds_slicer_sin_1_dout));
-  system_port_slicer_0_2 dds_slicer_cos_0
-       (.din(dds_0_dout),
-        .dout(port_slicer_0_dout1));
-  system_dds_slicer_0_0 dds_slicer_cos_1
-       (.din(dds_1_dout),
-        .dout(dds_slicer_1_dout));
-  system_dds_slicer_cos_0_0 dds_slicer_sin_0
-       (.din(dds_0_dout),
-        .dout(dds_slicer_cos_2_dout));
+        .s_axis_tdata(comb_0_M_AXIS_TDATA),
+        .s_axis_tready(comb_0_M_AXIS_TREADY),
+        .s_axis_tvalid(comb_0_M_AXIS_TVALID));
+  /* Filtro FIR. Compensa la respuesta del CIC y decima -> 100ksps
+Enter Comments here */
   system_fifo_0_0 fifo_0
        (.aclk(aclk),
         .aresetn(slice_0_dout),
-        .m_axis_tdata(fifo_0_m_axis_TDATA),
-        .m_axis_tready(fifo_0_m_axis_TREADY),
-        .m_axis_tvalid(fifo_0_m_axis_TVALID),
-        .read_count(fifo_0_read_count),
-        .s_axis_tdata(conv_1_M_AXIS_TDATA),
-        .s_axis_tready(conv_1_M_AXIS_TREADY),
-        .s_axis_tvalid(conv_1_M_AXIS_TVALID));
-  system_slice_0_0 fifo_reset_slice_0
-       (.din(hub_0_cfg_data),
-        .dout(slice_0_dout));
+        .m_axis_tdata(rx_0_m_axis_TDATA),
+        .m_axis_tready(rx_0_m_axis_TREADY),
+        .m_axis_tvalid(rx_0_m_axis_TVALID),
+        .read_count(rx_0_read_count),
+        .s_axis_tdata(fir_0_M_AXIS_DATA_TDATA),
+        .s_axis_tvalid(fir_0_M_AXIS_DATA_TVALID));
   system_fir_0_0 fir_0
        (.aclk(aclk),
         .aresetn(aresetn),
@@ -250,21 +182,6 @@ module rx_0_imp_178AHDX
         .s_axis_data_tdata(conv_0_M_AXIS_TDATA),
         .s_axis_data_tready(conv_0_M_AXIS_TREADY),
         .s_axis_data_tvalid(conv_0_M_AXIS_TVALID));
-  system_fir_1_0 fir_1
-       (.aclk(aclk),
-        .aresetn(aresetn),
-        .m_axis_data_tdata(fir_1_M_AXIS_DATA_TDATA),
-        .m_axis_data_tvalid(fir_1_M_AXIS_DATA_TVALID),
-        .s_axis_data_tdata(subset_0_M_AXIS_TDATA),
-        .s_axis_data_tvalid(subset_0_M_AXIS_TVALID));
-  system_fp_0_0 fp_0
-       (.aclk(aclk),
-        .aresetn(aresetn),
-        .m_axis_result_tdata(fp_0_M_AXIS_RESULT_TDATA),
-        .m_axis_result_tready(fp_0_M_AXIS_RESULT_TREADY),
-        .m_axis_result_tvalid(fp_0_M_AXIS_RESULT_TVALID),
-        .s_axis_a_tdata(subset_1_M_AXIS_TDATA),
-        .s_axis_a_tvalid(subset_1_M_AXIS_TVALID));
   system_hub_0_0 hub_0
        (.aclk(aclk),
         .aresetn(aresetn),
@@ -281,9 +198,9 @@ module rx_0_imp_178AHDX
         .m03_axis_tready(1'b1),
         .m04_axis_tready(1'b1),
         .m05_axis_tready(1'b1),
-        .s00_axis_tdata(conv_2_M_AXIS_TDATA),
-        .s00_axis_tready(conv_2_M_AXIS_TREADY),
-        .s00_axis_tvalid(conv_2_M_AXIS_TVALID),
+        .s00_axis_tdata(rx_0_m_axis_TDATA),
+        .s00_axis_tready(rx_0_m_axis_TREADY),
+        .s00_axis_tvalid(rx_0_m_axis_TVALID),
         .s01_axis_tdata({1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}),
         .s01_axis_tvalid(1'b0),
         .s02_axis_tdata({1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}),
@@ -316,44 +233,47 @@ module rx_0_imp_178AHDX
         .s_axi_wready(s_axi_wready),
         .s_axi_wstrb(s_axi_wstrb),
         .s_axi_wvalid(s_axi_wvalid),
-        .sts_data({1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,fifo_0_read_count}));
-  system_dsp48_0_0 mult_I_cos
-       (.A(port_slicer_0_dout1),
-        .B(adc_slicer_I_dout),
-        .CLK(aclk),
-        .P(mult_I_cos_P));
-  system_dsp48_0_2 mult_I_sin
-       (.A(dds_slicer_cos_2_dout),
-        .B(adc_slicer_I_dout),
-        .CLK(aclk),
-        .P(mult_I_sin_P));
-  system_mult_I_cos_0 mult_Q_asin
-       (.A(dds_slicer_sin_1_dout),
-        .B(adc_slicer_Q_dout),
-        .CLK(aclk),
-        .P(mult_Q_asin_P));
-  system_dsp48_0_1 mult_Q_cos
-       (.A(dds_slicer_1_dout),
-        .B(adc_slicer_Q_dout),
-        .CLK(aclk),
-        .P(mult_Q_cos_P));
-  system_subset_0_0 subset_0
+        .sts_data({1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,rx_0_read_count}));
+  system_lfsr_0_0 lfsr_0
        (.aclk(aclk),
         .aresetn(aresetn),
-        .m_axis_tdata(subset_0_M_AXIS_TDATA),
-        .m_axis_tvalid(subset_0_M_AXIS_TVALID),
-        .s_axis_tdata(fir_0_M_AXIS_DATA_TDATA),
-        .s_axis_tvalid(fir_0_M_AXIS_DATA_TVALID));
-  system_subset_1_0 subset_1
+        .m_axis_tdata(lfsr_0_m_axis_TDATA),
+        .m_axis_tready(1'b1),
+        .m_axis_tvalid(lfsr_0_m_axis_TVALID));
+  system_mult_0_0 mult_0
        (.aclk(aclk),
-        .aresetn(aresetn),
-        .m_axis_tdata(subset_1_M_AXIS_TDATA),
-        .m_axis_tvalid(subset_1_M_AXIS_TVALID),
-        .s_axis_tdata(fir_1_M_AXIS_DATA_TDATA),
-        .s_axis_tvalid(fir_1_M_AXIS_DATA_TVALID));
+        .m_axis_dout_tdata(mult_0_M_AXIS_DOUT_TDATA),
+        .m_axis_dout_tvalid(mult_0_M_AXIS_DOUT_TVALID),
+        .s_axis_a_tdata(s_axis_adc_tdata),
+        .s_axis_a_tvalid(s_axis_adc_tvalid),
+        .s_axis_b_tdata(dds_0_M_AXIS_DATA_TDATA),
+        .s_axis_b_tvalid(dds_0_M_AXIS_DATA_TVALID),
+        .s_axis_ctrl_tdata(lfsr_0_m_axis_TDATA[7:0]),
+        .s_axis_ctrl_tvalid(lfsr_0_m_axis_TVALID));
+  system_dds_0_0 osc_0
+       (.aclk(aclk),
+        .m_axis_data_tdata(dds_0_M_AXIS_DATA_TDATA),
+        .m_axis_data_tvalid(dds_0_M_AXIS_DATA_TVALID),
+        .s_axis_phase_tdata(phase_0_m_axis_TDATA),
+        .s_axis_phase_tvalid(phase_0_m_axis_TVALID));
+  system_phase_0_0 phase_0
+       (.aclk(aclk),
+        .cfg_data(slice_1_dout),
+        .m_axis_tdata(phase_0_m_axis_TDATA),
+        .m_axis_tvalid(phase_0_m_axis_TVALID));
+  system_slice_0_0 slice_0
+       (.din(hub_0_cfg_data),
+        .dout(slice_0_dout));
+  system_slice_1_0 slice_1
+       (.din(hub_0_cfg_data),
+        .dout(slice_1_dout));
 endmodule
 
-(* CORE_GENERATION_INFO = "system,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=system,x_ipVersion=1.00.a,x_ipLanguage=VERILOG,numBlks=36,numReposBlks=35,numNonXlnxBlks=0,numHierBlks=1,maxHierDepth=1,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=19,numPkgbdBlks=0,bdsource=USER,synth_mode=None}" *) (* HW_HANDOFF = "system.hwdef" *) 
+/* Hace la multiplicacion entre I y Q de la senal del ADC y el oscilador local complejo
+FIFO para guardar los datos
+CIC decimador -> 1Msps
+Tono de prueba para el loopback */
+(* CORE_GENERATION_INFO = "system,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=system,x_ipVersion=1.00.a,x_ipLanguage=VERILOG,numBlks=22,numReposBlks=21,numNonXlnxBlks=0,numHierBlks=1,maxHierDepth=1,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=9,numPkgbdBlks=0,bdsource=USER,synth_mode=None}" *) (* HW_HANDOFF = "system.hwdef" *) 
 module system
    (DDR_addr,
     DDR_ba,
@@ -427,7 +347,7 @@ module system
   output dac_sel_o;
   output dac_wrt_o;
   inout [7:0]exp_n_tri_io;
-  inout [7:0]exp_p_tri_io;
+  output [1:0]exp_p_tri_io;
   output [7:0]led_o;
 
   wire [14:0]DDR_addr;
@@ -451,14 +371,25 @@ module system
   wire FIXED_IO_ps_clk;
   wire FIXED_IO_ps_porb;
   wire FIXED_IO_ps_srstb;
-  wire [31:0]adc_0_m_axis_tdata;
+  wire [31:0]S_AXIS_A_1_TDATA;
+  wire S_AXIS_A_1_TVALID;
   wire adc_clk_n_i;
   wire adc_clk_p_i;
   wire adc_csn_o;
   wire [15:0]adc_dat_a_i;
   wire [15:0]adc_dat_b_i;
   wire [0:0]const_0_dout;
+  wire dac_clk_o;
+  wire [13:0]dac_dat_o;
+  wire dac_rst_o;
+  wire dac_sel_o;
+  wire dac_wrt_o;
+  wire [31:0]dds_compiler_0_M_AXIS_DATA_TDATA;
+  wire dds_compiler_0_M_AXIS_DATA_TREADY;
+  wire dds_compiler_0_M_AXIS_DATA_TVALID;
   wire pll_0_clk_out1;
+  wire pll_0_clk_out2;
+  wire pll_0_clk_out3;
   wire pll_0_locked;
   wire [31:0]ps_0_M_AXI_GP0_ARADDR;
   wire [11:0]ps_0_M_AXI_GP0_ARID;
@@ -489,13 +420,35 @@ module system
         .adc_csn(adc_csn_o),
         .adc_dat_a(adc_dat_a_i),
         .adc_dat_b(adc_dat_b_i),
-        .m_axis_tdata(adc_0_m_axis_tdata));
+        .m_axis_tdata(S_AXIS_A_1_TDATA),
+        .m_axis_tvalid(S_AXIS_A_1_TVALID));
   system_const_0_0 const_0
        (.dout(const_0_dout));
+  system_dac_0_0 dac_0
+       (.aclk(pll_0_clk_out1),
+        .dac_clk(dac_clk_o),
+        .dac_dat(dac_dat_o),
+        .dac_rst(dac_rst_o),
+        .dac_sel(dac_sel_o),
+        .dac_wrt(dac_wrt_o),
+        .ddr_clk(pll_0_clk_out2),
+        .locked(pll_0_locked),
+        .s_axis_tdata(dds_compiler_0_M_AXIS_DATA_TDATA),
+        .s_axis_tready(dds_compiler_0_M_AXIS_DATA_TREADY),
+        .s_axis_tvalid(dds_compiler_0_M_AXIS_DATA_TVALID),
+        .wrt_clk(pll_0_clk_out3));
+  system_dds_compiler_0_0 dds_compiler_0
+       (.aclk(pll_0_clk_out1),
+        .aresetn(rst_0_peripheral_aresetn),
+        .m_axis_data_tdata(dds_compiler_0_M_AXIS_DATA_TDATA),
+        .m_axis_data_tready(dds_compiler_0_M_AXIS_DATA_TREADY),
+        .m_axis_data_tvalid(dds_compiler_0_M_AXIS_DATA_TVALID));
   system_pll_0_0 pll_0
        (.clk_in1_n(adc_clk_n_i),
         .clk_in1_p(adc_clk_p_i),
         .clk_out1(pll_0_clk_out1),
+        .clk_out2(pll_0_clk_out2),
+        .clk_out3(pll_0_clk_out3),
         .locked(pll_0_locked));
   system_ps_0_0 ps_0
        (.DDR_Addr(DDR_addr),
@@ -542,6 +495,18 @@ module system
         .M_AXI_GP0_WREADY(ps_0_M_AXI_GP0_WREADY),
         .M_AXI_GP0_WSTRB(ps_0_M_AXI_GP0_WSTRB),
         .M_AXI_GP0_WVALID(ps_0_M_AXI_GP0_WVALID),
+        .M_AXI_GP1_ACLK(pll_0_clk_out1),
+        .M_AXI_GP1_ARREADY(1'b0),
+        .M_AXI_GP1_AWREADY(1'b0),
+        .M_AXI_GP1_BID({1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}),
+        .M_AXI_GP1_BRESP({1'b0,1'b0}),
+        .M_AXI_GP1_BVALID(1'b0),
+        .M_AXI_GP1_RDATA({1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}),
+        .M_AXI_GP1_RID({1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0}),
+        .M_AXI_GP1_RLAST(1'b0),
+        .M_AXI_GP1_RRESP({1'b0,1'b0}),
+        .M_AXI_GP1_RVALID(1'b0),
+        .M_AXI_GP1_WREADY(1'b0),
         .PS_CLK(FIXED_IO_ps_clk),
         .PS_PORB(FIXED_IO_ps_porb),
         .PS_SRSTB(FIXED_IO_ps_srstb),
@@ -560,7 +525,6 @@ module system
   rx_0_imp_178AHDX rx_0
        (.aclk(pll_0_clk_out1),
         .aresetn(rst_0_peripheral_aresetn),
-        .din(adc_0_m_axis_tdata),
         .s_axi_araddr(ps_0_M_AXI_GP0_ARADDR),
         .s_axi_arid(ps_0_M_AXI_GP0_ARID),
         .s_axi_arlen(ps_0_M_AXI_GP0_ARLEN),
@@ -582,5 +546,7 @@ module system
         .s_axi_wlast(ps_0_M_AXI_GP0_WLAST),
         .s_axi_wready(ps_0_M_AXI_GP0_WREADY),
         .s_axi_wstrb(ps_0_M_AXI_GP0_WSTRB),
-        .s_axi_wvalid(ps_0_M_AXI_GP0_WVALID));
+        .s_axi_wvalid(ps_0_M_AXI_GP0_WVALID),
+        .s_axis_adc_tdata(S_AXIS_A_1_TDATA),
+        .s_axis_adc_tvalid(S_AXIS_A_1_TVALID));
 endmodule

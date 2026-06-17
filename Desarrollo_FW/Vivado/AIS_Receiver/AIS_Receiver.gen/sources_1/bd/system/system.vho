@@ -87,9 +87,9 @@ COMPONENT system
     dac_sel_o : OUT STD_LOGIC;
     dac_wrt_o : OUT STD_LOGIC;
     dac_pwm_o : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-    exp_p_tri_io : INOUT STD_LOGIC_VECTOR(7 DOWNTO 0);
     exp_n_tri_io : INOUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-    led_o : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+    led_o : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+    exp_p_tri_io : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
   );
 END COMPONENT;
 -- COMP_TAG_END ------  End cut for COMPONENT Declaration  ------
@@ -134,9 +134,9 @@ your_instance_name : system
     dac_sel_o => dac_sel_o,
     dac_wrt_o => dac_wrt_o,
     dac_pwm_o => dac_pwm_o,
-    exp_p_tri_io => exp_p_tri_io,
     exp_n_tri_io => exp_n_tri_io,
-    led_o => led_o
+    led_o => led_o,
+    exp_p_tri_io => exp_p_tri_io
   );
 -- INST_TAG_END ------  End cut for INSTANTIATION Template  ------
 
