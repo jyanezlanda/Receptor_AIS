@@ -1,6 +1,6 @@
-set_property SRC_FILE_INFO {cfile:d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_pll_0_0/system_pll_0_0.xdc rfile:../../../AIS_Receiver.gen/sources_1/bd/system/ip/system_pll_0_0/system_pll_0_0.xdc id:1 order:EARLY scoped_inst:system_i/pll_0/inst} [current_design]
-set_property SRC_FILE_INFO {cfile:d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_ps_0_0/system_ps_0_0.xdc rfile:../../../AIS_Receiver.gen/sources_1/bd/system/ip/system_ps_0_0/system_ps_0_0.xdc id:2 order:EARLY scoped_inst:system_i/ps_0/inst} [current_design]
-set_property SRC_FILE_INFO {cfile:D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/constrs_1/imports/cfg/ports.xdc rfile:../../../AIS_Receiver.srcs/constrs_1/imports/cfg/ports.xdc id:3} [current_design]
+set_property SRC_FILE_INFO {cfile:d:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/ip/system_pll_0_0/system_pll_0_0.xdc rfile:../../../AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/ip/system_pll_0_0/system_pll_0_0.xdc id:1 order:EARLY scoped_inst:system_i/pll_0/inst} [current_design]
+set_property SRC_FILE_INFO {cfile:d:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/ip/system_ps_0_0/system_ps_0_0.xdc rfile:../../../AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/ip/system_ps_0_0/system_ps_0_0.xdc id:2 order:EARLY scoped_inst:system_i/ps_0/inst} [current_design]
+set_property SRC_FILE_INFO {cfile:D:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.srcs/constrs_1/imports/cfg/ports.xdc rfile:../../../AIS_Receiver_Fifo_Test.srcs/constrs_1/imports/cfg/ports.xdc id:3} [current_design]
 current_instance system_i/pll_0/inst
 set_property src_info {type:SCOPED_XDC file:1 line:54 export:INPUT save:INPUT read:READ} [current_design]
 set_input_jitter [get_clocks -of_objects [get_ports clk_in1_p]] 0.080

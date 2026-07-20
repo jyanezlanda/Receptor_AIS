@@ -46,7 +46,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 
 # The design that will be created by this Tcl script contains the following 
 # module references:
-# constant, axis_red_pitaya_adc, axis_red_pitaya_dac, axi_hub, port_slicer, port_slicer, axis_constant, axis_lfsr, axis_fifo
+# constant, axis_red_pitaya_adc, axis_red_pitaya_dac, axi_hub, port_slicer, port_slicer, axis_constant, axis_lfsr, axis_fifo, axi_hub, port_slicer, port_slicer, port_slicer, axis_fifo, axis_ram_reader
 
 # Please add the sources of those modules before sourcing this Tcl script.
 
@@ -122,12 +122,6 @@ if { ${design_name} eq "" } {
 
 }
 
-  # Add USER_COMMENTS on $design_name
-  set_property USER_COMMENTS.comment_10 "Tono de prueba para el loopback" [get_bd_designs $design_name]
-  set_property USER_COMMENTS.comment_2 "Hace la multiplicacion entre I y Q de la senal del ADC y el oscilador local complejo" [get_bd_designs $design_name]
-  set_property USER_COMMENTS.comment_5 "FIFO para guardar los datos" [get_bd_designs $design_name]
-  set_property USER_COMMENTS.comment_9 "CIC decimador -> 1Msps" [get_bd_designs $design_name]
-
 common::send_gid_msg -ssname BD::TCL -id 2005 -severity "INFO" "Currently the variable <design_name> is equal to \"$design_name\"."
 
 if { $nRet != 0 } {
@@ -186,6 +180,12 @@ port_slicer\
 axis_constant\
 axis_lfsr\
 axis_fifo\
+axi_hub\
+port_slicer\
+port_slicer\
+port_slicer\
+axis_fifo\
+axis_ram_reader\
 "
 
    set list_mods_missing ""
@@ -213,6 +213,184 @@ if { $bCheckIPsPassed != 1 } {
 # DESIGN PROCs
 ##################################################################
 
+
+# Hierarchical cell: test_0
+proc create_hier_cell_test_0 { parentCell nameHier } {
+
+  variable script_folder
+
+  if { $parentCell eq "" || $nameHier eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2092 -severity "ERROR" "create_hier_cell_test_0() - Empty argument(s)!"}
+     return
+  }
+
+  # Get object for parentCell
+  set parentObj [get_bd_cells $parentCell]
+  if { $parentObj == "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2090 -severity "ERROR" "Unable to find parent cell <$parentCell>!"}
+     return
+  }
+
+  # Make sure parentObj is hier blk
+  set parentType [get_property TYPE $parentObj]
+  if { $parentType ne "hier" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2091 -severity "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
+     return
+  }
+
+  # Save current instance; Restore later
+  set oldCurInst [current_bd_instance .]
+
+  # Set parent object as current
+  current_bd_instance $parentObj
+
+  # Create cell and set as current instance
+  set hier_obj [create_bd_cell -type hier $nameHier]
+  current_bd_instance $hier_obj
+
+  # Create interface pins
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 s_axi_0
+
+  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 m_axi_ram
+
+  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:axis_rtl:1.0 m_axis_fifo
+
+
+  # Create pins
+  create_bd_pin -dir I -type clk aclk
+  create_bd_pin -dir I -type rst aresetn
+
+  # Create instance: axi_hub_0, and set properties
+  set block_name axi_hub
+  set block_cell_name axi_hub_0
+  if { [catch {set axi_hub_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2095 -severity "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $axi_hub_0 eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+    set_property -dict [list \
+    CONFIG.CFG_DATA_WIDTH {96} \
+    CONFIG.STS_DATA_WIDTH {32} \
+  ] $axi_hub_0
+
+
+  # Create instance: rst_slice, and set properties
+  set block_name port_slicer
+  set block_cell_name rst_slice
+  if { [catch {set rst_slice [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2095 -severity "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $rst_slice eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+    set_property -dict [list \
+    CONFIG.DIN_FROM {0} \
+    CONFIG.DIN_WIDTH {96} \
+  ] $rst_slice
+
+
+  # Create instance: addr_slice, and set properties
+  set block_name port_slicer
+  set block_cell_name addr_slice
+  if { [catch {set addr_slice [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2095 -severity "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $addr_slice eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+    set_property -dict [list \
+    CONFIG.DIN_FROM {63} \
+    CONFIG.DIN_TO {32} \
+    CONFIG.DIN_WIDTH {96} \
+  ] $addr_slice
+
+
+  # Create instance: size_slice, and set properties
+  set block_name port_slicer
+  set block_cell_name size_slice
+  if { [catch {set size_slice [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2095 -severity "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $size_slice eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+    set_property -dict [list \
+    CONFIG.DIN_FROM {81} \
+    CONFIG.DIN_TO {64} \
+    CONFIG.DIN_WIDTH {96} \
+  ] $size_slice
+
+
+  # Create instance: axis_fifo_0, and set properties
+  set block_name axis_fifo
+  set block_cell_name axis_fifo_0
+  if { [catch {set axis_fifo_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2095 -severity "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $axis_fifo_0 eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+    set_property -dict [list \
+    CONFIG.ALWAYS_READY {TRUE} \
+    CONFIG.WRITE_DEPTH {8192} \
+  ] $axis_fifo_0
+
+
+  # Create instance: axis_ram_reader_0, and set properties
+  set block_name axis_ram_reader
+  set block_cell_name axis_ram_reader_0
+  if { [catch {set axis_ram_reader_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2095 -severity "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $axis_ram_reader_0 eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+    set_property -dict [list \
+    CONFIG.ADDR_WIDTH {18} \
+    CONFIG.AXIS_TDATA_WIDTH {32} \
+    CONFIG.AXI_ID_WIDTH {3} \
+    CONFIG.FIFO_WRITE_DEPTH {1024} \
+    CONFIG.MAX_OUTSTANDING {8} \
+  ] $axis_ram_reader_0
+
+
+  # Create interface connections
+  connect_bd_intf_net -intf_net Conn1 [get_bd_intf_pins axi_hub_0/s_axi] [get_bd_intf_pins s_axi_0]
+  connect_bd_intf_net -intf_net Conn3 [get_bd_intf_pins axis_fifo_0/m_axis] [get_bd_intf_pins m_axis_fifo]
+  connect_bd_intf_net -intf_net axis_ram_reader_1_m_axi [get_bd_intf_pins m_axi_ram] [get_bd_intf_pins axis_ram_reader_0/m_axi]
+  connect_bd_intf_net -intf_net axis_ram_reader_1_m_axis [get_bd_intf_pins axis_ram_reader_0/m_axis] [get_bd_intf_pins axis_fifo_0/s_axis]
+
+  # Create port connections
+  connect_bd_net -net addr_slice_dout  [get_bd_pins addr_slice/dout] \
+  [get_bd_pins axis_ram_reader_0/min_addr]
+  connect_bd_net -net aresetn_1  [get_bd_pins aresetn] \
+  [get_bd_pins axi_hub_0/aresetn] \
+  [get_bd_pins axis_fifo_0/aresetn]
+  connect_bd_net -net axi_hub_0_cfg_data  [get_bd_pins axi_hub_0/cfg_data] \
+  [get_bd_pins rst_slice/din] \
+  [get_bd_pins addr_slice/din] \
+  [get_bd_pins size_slice/din]
+  connect_bd_net -net axis_ram_reader_1_sts_data  [get_bd_pins axis_ram_reader_0/sts_data] \
+  [get_bd_pins axi_hub_0/sts_data]
+  connect_bd_net -net pll_0_clk_out1  [get_bd_pins aclk] \
+  [get_bd_pins axi_hub_0/aclk] \
+  [get_bd_pins axis_fifo_0/aclk] \
+  [get_bd_pins axis_ram_reader_0/aclk]
+  connect_bd_net -net size_slice_dout  [get_bd_pins size_slice/dout] \
+  [get_bd_pins axis_ram_reader_0/cfg_data]
+  connect_bd_net -net slicer_reset_dout  [get_bd_pins rst_slice/dout] \
+  [get_bd_pins axis_ram_reader_0/aresetn]
+
+  # Restore current instance
+  current_bd_instance $oldCurInst
+}
 
 # Hierarchical cell: rx_0
 proc create_hier_cell_rx_0 { parentCell nameHier } {
@@ -392,12 +570,12 @@ proc create_hier_cell_rx_0 { parentCell nameHier } {
   set_property -dict [list \
     CONFIG.Clock_Frequency {125} \
     CONFIG.Filter_Type {Decimation} \
-    CONFIG.Fixed_Or_Initial_Rate {125} \
+    CONFIG.Fixed_Or_Initial_Rate {651} \
     CONFIG.HAS_ARESETN {true} \
     CONFIG.Input_Data_Width {24} \
     CONFIG.Input_Sample_Frequency {125} \
-    CONFIG.Maximum_Rate {125} \
-    CONFIG.Minimum_Rate {125} \
+    CONFIG.Maximum_Rate {651} \
+    CONFIG.Minimum_Rate {651} \
     CONFIG.Number_Of_Stages {6} \
     CONFIG.Output_Data_Width {32} \
     CONFIG.Quantization {Truncation} \
@@ -425,61 +603,15 @@ proc create_hier_cell_rx_0 { parentCell nameHier } {
   set_property -dict [list \
     CONFIG.BestPrecision {true} \
     CONFIG.Clock_Frequency {125} \
-    CONFIG.CoefficientVector {1.3898158212e-08, 1.3861714579e-08, 1.3216886709e-08, 1.2034940945e-08, 1.0461287134e-08, 8.7156516487e-09, 7.0866915433e-09, 5.9206011127e-09, 5.6035744525e-09, 6.5383454691e-09,\
-9.1154152017e-09, 1.3679977055e-08, 2.0495942815e-08, 2.9708833654e-08, 4.1309607521e-08, 5.5101724689e-08, 7.0673885697e-08, 8.7380892424e-08, 1.0433496958e-07, 1.2040963185e-07, 1.3425778869e-07, 1.4434524931e-07,\
-1.4900013545e-07, 1.4647795048e-07, 1.3504121456e-07, 1.1305169244e-07, 7.9072350513e-08, 3.1975327296e-08, -2.8948568312e-08, -1.0388395702e-07, -1.9239417950e-07, -2.9333962014e-07, -4.0481690855e-07,\
--5.2412456774e-07, -6.4776011159e-07, -7.7145273121e-07, -8.9023456275e-07, -9.9855211947e-07, -1.0904178399e-06, -1.1595999017e-06, -1.1998465438e-06, -1.2051392064e-06, -1.1699669160e-06, -1.0896126123e-06,\
--9.6044061490e-07, -7.8017325955e-07, -5.4814397020e-07, -2.6551375102e-07, 6.4561662977e-08, 4.3682593086e-07, 8.4388802393e-07, 1.2762684576e-06, 1.7225318168e-06, 2.1695085292e-06, 2.6026054266e-06,\
-3.0062009302e-06, 3.3641168563e-06, 3.6601549951e-06, 3.8786829469e-06, 4.0052503680e-06, 4.0272139561e-06, 3.9343473525e-06, 3.7194107947e-06, 3.3786549504e-06, 2.9122339797e-06, 2.3245045709e-06, 1.6241904852e-06,\
-8.2439598863e-07, -5.7543626399e-08, -1.0003805546e-06, -1.9794418080e-06, -2.9672783365e-06, -3.9344618967e-06, -4.8505086813e-06, -5.6849021335e-06, -6.4081814531e-06, -6.9930573341e-06, -7.4155127462e-06,\
--7.6558443173e-06, -7.6995992958e-06, -7.5383643082e-06, -7.1703652567e-06, -6.6008427246e-06, -5.8421740952e-06, -4.9137220849e-06, -3.8413993022e-06, -2.6569494564e-06, -1.3969575678e-06, -1.0161353804e-07,\
-1.1867347614e-06, 2.4251916358e-06, 3.5720298359e-06, 4.5884476901e-06, 5.4402958693e-06, 6.0996991606e-06, 6.5464981164e-06, 6.7694380581e-06, 6.7670387308e-06, 6.5480869221e-06, 6.1317064096e-06, 5.5469743940e-06,\
-4.8320706835e-06, 4.0329647694e-06, 3.2016659004e-06, 2.3940815851e-06, 1.6675497937e-06, 1.0781286480e-06, 6.7774371573e-07, 5.1130634057e-07, 6.1392597711e-07, 1.0083446092e-06, 1.7027214890e-06, 2.6888912892e-06,\
-3.9412081574e-06, 5.4160721458e-06, 7.0522133425e-06, 8.7717832539e-06, 1.0482273305e-05, 1.2079247671e-05, 1.3449843137e-05, 1.4476953579e-05, 1.5043982336e-05, 1.5040013612e-05, 1.4365225612e-05, 1.2936344684e-05,\
-1.0691922654e-05, 7.5972099061e-06, 3.6483954501e-06, -1.1240071275e-06, -6.6528320167e-06, -1.2833169864e-05, -1.9522655823e-05, -2.6543236987e-05, -3.3684469236e-05, -4.0708338174e-05, -4.7355539783e-05,\
--5.3353095800e-05, -5.8423118866e-05, -6.2292485492e-05, -6.4703123322e-05, -6.5422575268e-05, -6.4254469139e-05, -6.1048499177e-05, -5.5709517180e-05, -4.8205336707e-05, -3.8572874971e-05, -2.6922293558e-05,\
--1.3438850629e-05, 1.6177572171e-06, 1.7916707432e-05, 3.5062074323e-05, 5.2601522699e-05, 7.0037533052e-05, 8.6840918316e-05, 1.0246629448e-04, 1.1636907622e-04, 1.2802348806e-04, 1.3694101506e-04, 1.4268866792e-04,\
-1.4490640806e-04, 1.4332307200e-04, 1.3777015124e-04, 1.2819282575e-04, 1.1465771525e-04, 9.7356901847e-05, 7.6607887854e-05, 5.2849281722e-05, 2.6632147707e-05, -1.3928918068e-06, -3.0492554792e-05, -5.9871395412e-05,\
--8.8695343593e-05, -1.1611759713e-04, -1.4130605603e-04, -1.6347139327e-04, -1.8189478937e-04, -1.9595432363e-04, -2.0514901593e-04, -2.0911955093e-04, -2.0766479275e-04, -2.0075331019e-04, -1.8852928008e-04,\
--1.7131231389e-04, -1.4959095626e-04, -1.2400982699e-04, -9.5350613127e-05, -6.4507356842e-05, -3.2456718907e-05, -2.2411846599e-07, 3.1153152438e-05, 6.0664574210e-05, 8.7365411790e-05, 1.1041461841e-04,\
-1.2911012515e-04, 1.4292003500e-04, 1.5150832127e-04, 1.5475376908e-04, 1.5276109180e-04, 1.4586339857e-04, 1.3461547710e-04, 1.1977768061e-04, 1.0229055721e-04, 8.3240724821e-05, 6.3818859798e-05, 4.5271021460e-05,\
-2.8844862120e-05, 1.5732560749e-05, 7.0125543845e-06, 3.5923135808e-06, 6.1545064514e-06, 1.5108912387e-05, 3.0552376079e-05, 5.2238932567e-05, 7.9561985304e-05, 1.1155008565e-04, 1.4687745081e-04, 1.8388987840e-04,\
-2.2064618304e-04, 2.5497470899e-04, 2.8454388213e-04, 3.0694517331e-04, 3.1978627492e-04, 3.2079176524e-04, 3.0790807074e-04, 2.7940915631e-04, 2.3399909526e-04, 1.7090751033e-04, 8.9973846739e-05, -8.2834522343e-06,\
--1.2261654419e-04, -2.5101984157e-04, -3.9072646646e-04, -5.3823158862e-04, -6.8934395237e-04, -8.3926602699e-04, -9.8270227383e-04, -1.1139940391e-03, -1.2272785843e-03, -1.3166687869e-03, -1.3764491215e-03,\
--1.4012826891e-03, -1.3864233416e-03, -1.3279263775e-03, -1.2228508831e-03, -1.0694465929e-03, -8.6731815826e-04, -6.1755994867e-04, -3.2285498195e-04, 1.2467725375e-05, 3.8242217989e-04, 7.7940448278e-04,\
-1.1942843351e-03, 1.6165499232e-03, 2.0345055813e-03, 2.4355200164e-03, 2.8063212402e-03, 3.1333327467e-03, 3.4030439391e-03, 3.6024064059e-03, 3.7192464096e-03, 3.7426829442e-03, 3.6635399567e-03, 3.4747408711e-03,\
-3.1716734070e-03, 2.7525128794e-03, 2.2184927045e-03, 1.5741117219e-03, 8.2726915497e-04, -1.0680438016e-05, -9.2495806370e-04, -1.8974808418e-03, -2.9070737608e-03, -3.9297718329e-03, -4.9392093953e-03,\
--5.9070908600e-03, -6.8037348258e-03, -7.5986812110e-03, -8.2613490096e-03, -8.7617304709e-03, -9.0711060285e-03, -9.1627631879e-03, -9.0127018832e-03, -8.6003085499e-03, -7.9089813574e-03, -6.9266897094e-03,\
--5.6464522437e-03, -4.0667191275e-03, -2.1916464193e-03, -3.1252610001e-05, 2.3985498913e-03, 5.0760526612e-03, 7.9739798128e-03, 1.1059845279e-02, 1.4296433721e-02, 1.7642396847e-02, 2.1052953936e-02,\
-2.4480682660e-02, 2.7876383842e-02, 3.1190001749e-02, 3.4371579923e-02, 3.7372231372e-02, 4.0145101386e-02, 4.2646301122e-02, 4.4835790578e-02, 4.6678190601e-02, 4.8143505076e-02, 4.9207736438e-02, 4.9853380107e-02,\
-5.0069786214e-02, 4.9853380107e-02, 4.9207736438e-02, 4.8143505076e-02, 4.6678190601e-02, 4.4835790578e-02, 4.2646301122e-02, 4.0145101386e-02, 3.7372231372e-02, 3.4371579923e-02, 3.1190001749e-02, 2.7876383842e-02,\
-2.4480682660e-02, 2.1052953936e-02, 1.7642396847e-02, 1.4296433721e-02, 1.1059845279e-02, 7.9739798128e-03, 5.0760526612e-03, 2.3985498913e-03, -3.1252610001e-05, -2.1916464193e-03, -4.0667191275e-03,\
--5.6464522437e-03, -6.9266897094e-03, -7.9089813574e-03, -8.6003085499e-03, -9.0127018832e-03, -9.1627631879e-03, -9.0711060285e-03, -8.7617304709e-03, -8.2613490096e-03, -7.5986812110e-03, -6.8037348258e-03,\
--5.9070908600e-03, -4.9392093953e-03, -3.9297718329e-03, -2.9070737608e-03, -1.8974808418e-03, -9.2495806370e-04, -1.0680438016e-05, 8.2726915497e-04, 1.5741117219e-03, 2.2184927045e-03, 2.7525128794e-03,\
-3.1716734070e-03, 3.4747408711e-03, 3.6635399567e-03, 3.7426829442e-03, 3.7192464096e-03, 3.6024064059e-03, 3.4030439391e-03, 3.1333327467e-03, 2.8063212402e-03, 2.4355200164e-03, 2.0345055813e-03, 1.6165499232e-03,\
-1.1942843351e-03, 7.7940448278e-04, 3.8242217989e-04, 1.2467725375e-05, -3.2285498195e-04, -6.1755994867e-04, -8.6731815826e-04, -1.0694465929e-03, -1.2228508831e-03, -1.3279263775e-03, -1.3864233416e-03,\
--1.4012826891e-03, -1.3764491215e-03, -1.3166687869e-03, -1.2272785843e-03, -1.1139940391e-03, -9.8270227383e-04, -8.3926602699e-04, -6.8934395237e-04, -5.3823158862e-04, -3.9072646646e-04, -2.5101984157e-04,\
--1.2261654419e-04, -8.2834522343e-06, 8.9973846739e-05, 1.7090751033e-04, 2.3399909526e-04, 2.7940915631e-04, 3.0790807074e-04, 3.2079176524e-04, 3.1978627492e-04, 3.0694517331e-04, 2.8454388213e-04, 2.5497470899e-04,\
-2.2064618304e-04, 1.8388987840e-04, 1.4687745081e-04, 1.1155008565e-04, 7.9561985304e-05, 5.2238932567e-05, 3.0552376079e-05, 1.5108912387e-05, 6.1545064514e-06, 3.5923135808e-06, 7.0125543845e-06, 1.5732560749e-05,\
-2.8844862120e-05, 4.5271021460e-05, 6.3818859798e-05, 8.3240724821e-05, 1.0229055721e-04, 1.1977768061e-04, 1.3461547710e-04, 1.4586339857e-04, 1.5276109180e-04, 1.5475376908e-04, 1.5150832127e-04, 1.4292003500e-04,\
-1.2911012515e-04, 1.1041461841e-04, 8.7365411790e-05, 6.0664574210e-05, 3.1153152438e-05, -2.2411846599e-07, -3.2456718907e-05, -6.4507356842e-05, -9.5350613127e-05, -1.2400982699e-04, -1.4959095626e-04,\
--1.7131231389e-04, -1.8852928008e-04, -2.0075331019e-04, -2.0766479275e-04, -2.0911955093e-04, -2.0514901593e-04, -1.9595432363e-04, -1.8189478937e-04, -1.6347139327e-04, -1.4130605603e-04, -1.1611759713e-04,\
--8.8695343593e-05, -5.9871395412e-05, -3.0492554792e-05, -1.3928918068e-06, 2.6632147707e-05, 5.2849281722e-05, 7.6607887854e-05, 9.7356901847e-05, 1.1465771525e-04, 1.2819282575e-04, 1.3777015124e-04,\
-1.4332307200e-04, 1.4490640806e-04, 1.4268866792e-04, 1.3694101506e-04, 1.2802348806e-04, 1.1636907622e-04, 1.0246629448e-04, 8.6840918316e-05, 7.0037533052e-05, 5.2601522699e-05, 3.5062074323e-05, 1.7916707432e-05,\
-1.6177572171e-06, -1.3438850629e-05, -2.6922293558e-05, -3.8572874971e-05, -4.8205336707e-05, -5.5709517180e-05, -6.1048499177e-05, -6.4254469139e-05, -6.5422575268e-05, -6.4703123322e-05, -6.2292485492e-05,\
--5.8423118866e-05, -5.3353095800e-05, -4.7355539783e-05, -4.0708338174e-05, -3.3684469236e-05, -2.6543236987e-05, -1.9522655823e-05, -1.2833169864e-05, -6.6528320167e-06, -1.1240071275e-06, 3.6483954501e-06,\
-7.5972099061e-06, 1.0691922654e-05, 1.2936344684e-05, 1.4365225612e-05, 1.5040013612e-05, 1.5043982336e-05, 1.4476953579e-05, 1.3449843137e-05, 1.2079247671e-05, 1.0482273305e-05, 8.7717832539e-06, 7.0522133425e-06,\
-5.4160721458e-06, 3.9412081574e-06, 2.6888912892e-06, 1.7027214890e-06, 1.0083446092e-06, 6.1392597711e-07, 5.1130634057e-07, 6.7774371573e-07, 1.0781286480e-06, 1.6675497937e-06, 2.3940815851e-06, 3.2016659004e-06,\
-4.0329647694e-06, 4.8320706835e-06, 5.5469743940e-06, 6.1317064096e-06, 6.5480869221e-06, 6.7670387308e-06, 6.7694380581e-06, 6.5464981164e-06, 6.0996991606e-06, 5.4402958693e-06, 4.5884476901e-06, 3.5720298359e-06,\
-2.4251916358e-06, 1.1867347614e-06, -1.0161353804e-07, -1.3969575678e-06, -2.6569494564e-06, -3.8413993022e-06, -4.9137220849e-06, -5.8421740952e-06, -6.6008427246e-06, -7.1703652567e-06, -7.5383643082e-06,\
--7.6995992958e-06, -7.6558443173e-06, -7.4155127462e-06, -6.9930573341e-06, -6.4081814531e-06, -5.6849021335e-06, -4.8505086813e-06, -3.9344618967e-06, -2.9672783365e-06, -1.9794418080e-06, -1.0003805546e-06,\
--5.7543626399e-08, 8.2439598863e-07, 1.6241904852e-06, 2.3245045709e-06, 2.9122339797e-06, 3.3786549504e-06, 3.7194107947e-06, 3.9343473525e-06, 4.0272139561e-06, 4.0052503680e-06, 3.8786829469e-06, 3.6601549951e-06,\
-3.3641168563e-06, 3.0062009302e-06, 2.6026054266e-06, 2.1695085292e-06, 1.7225318168e-06, 1.2762684576e-06, 8.4388802393e-07, 4.3682593086e-07, 6.4561662977e-08, -2.6551375102e-07, -5.4814397020e-07, -7.8017325955e-07,\
--9.6044061490e-07, -1.0896126123e-06, -1.1699669160e-06, -1.2051392064e-06, -1.1998465438e-06, -1.1595999017e-06, -1.0904178399e-06, -9.9855211947e-07, -8.9023456275e-07, -7.7145273121e-07, -6.4776011159e-07,\
--5.2412456774e-07, -4.0481690855e-07, -2.9333962014e-07, -1.9239417950e-07, -1.0388395702e-07, -2.8948568312e-08, 3.1975327296e-08, 7.9072350513e-08, 1.1305169244e-07, 1.3504121456e-07, 1.4647795048e-07,\
-1.4900013545e-07, 1.4434524931e-07, 1.3425778869e-07, 1.2040963185e-07, 1.0433496958e-07, 8.7380892424e-08, 7.0673885697e-08, 5.5101724689e-08, 4.1309607521e-08, 2.9708833654e-08, 2.0495942815e-08, 1.3679977055e-08,\
-9.1154152017e-09, 6.5383454691e-09, 5.6035744525e-09, 5.9206011127e-09, 7.0866915433e-09, 8.7156516487e-09, 1.0461287134e-08, 1.2034940945e-08, 1.3216886709e-08, 1.3861714579e-08, 1.3898158212e-08} \
-    CONFIG.Coefficient_Fractional_Bits {27} \
+    CONFIG.CoefficientVector {-1.5293836682e-08, -2.7075718937e-07, -1.1064975909e-07, -8.9600098752e-07, -2.0759708241e-07, -5.5893071791e-07, 1.3233127291e-07, 3.7290781823e-06, 1.4756722767e-06, 1.2998285438e-05,\
+3.4215411990e-06, 1.9246156347e-05, 3.3338274849e-06, 3.0548162974e-06, -2.9750294640e-06, -5.1958500098e-05, -1.6751023607e-05, -1.2670051368e-04, -2.9662571452e-05, -1.4123122029e-04, -2.1830125125e-05,\
+1.8170219843e-05, 2.7199557537e-05, 3.9175889562e-04, 1.1339725239e-04, 7.9779344997e-04, 1.8210772492e-04, 7.6096962500e-04, 1.2454404335e-04, -3.4137560855e-04, -1.8476969980e-04, -2.8469281448e-03,\
+-8.1598347616e-04, -6.0986572383e-03, -1.7140186298e-03, -7.0552975130e-03, -2.6796455493e-03, 7.3081925570e-03, -3.4289490444e-03, 2.5734798089e-01, 5.1687857438e-01, 2.5734798089e-01, -3.4289490444e-03,\
+7.3081925570e-03, -2.6796455493e-03, -7.0552975130e-03, -1.7140186298e-03, -6.0986572383e-03, -8.1598347616e-04, -2.8469281448e-03, -1.8476969980e-04, -3.4137560855e-04, 1.2454404335e-04, 7.6096962500e-04,\
+1.8210772492e-04, 7.9779344997e-04, 1.1339725239e-04, 3.9175889562e-04, 2.7199557537e-05, 1.8170219843e-05, -2.1830125125e-05, -1.4123122029e-04, -2.9662571452e-05, -1.2670051368e-04, -1.6751023607e-05,\
+-5.1958500098e-05, -2.9750294640e-06, 3.0548162974e-06, 3.3338274849e-06, 1.9246156347e-05, 3.4215411990e-06, 1.2998285438e-05, 1.4756722767e-06, 3.7290781823e-06, 1.3233127291e-07, -5.5893071791e-07,\
+-2.0759708241e-07, -8.9600098752e-07, -1.1064975909e-07, -2.7075718937e-07, -1.5293836682e-08} \
+    CONFIG.Coefficient_Fractional_Bits {23} \
     CONFIG.Coefficient_Sets {1} \
     CONFIG.Coefficient_Sign {Signed} \
     CONFIG.Coefficient_Structure {Inferred} \
@@ -487,19 +619,22 @@ proc create_hier_cell_rx_0 { parentCell nameHier } {
     CONFIG.ColumnConfig {1} \
     CONFIG.DATA_Has_TLAST {Not_Required} \
     CONFIG.Data_Width {32} \
-    CONFIG.Decimation_Rate {10} \
+    CONFIG.Decimation_Rate {1} \
     CONFIG.Filter_Architecture {Systolic_Multiply_Accumulate} \
-    CONFIG.Filter_Type {Decimation} \
+    CONFIG.Filter_Type {Single_Rate} \
     CONFIG.Has_ARESETn {true} \
+    CONFIG.Interpolation_Rate {1} \
     CONFIG.M_DATA_Has_TUSER {Not_Required} \
     CONFIG.Number_Channels {2} \
     CONFIG.Number_Paths {1} \
     CONFIG.Output_Rounding_Mode {Convergent_Rounding_to_Even} \
     CONFIG.Output_Width {32} \
     CONFIG.Quantization {Quantize_Only} \
+    CONFIG.RateSpecification {Frequency_Specification} \
     CONFIG.S_DATA_Has_TUSER {Not_Required} \
-    CONFIG.Sample_Frequency {0.5} \
+    CONFIG.Sample_Frequency {0.0960061444} \
     CONFIG.Select_Pattern {All} \
+    CONFIG.Zero_Pack_Factor {1} \
   ] $fir_0
 
 
@@ -513,8 +648,7 @@ proc create_hier_cell_rx_0 { parentCell nameHier } {
      catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
      return 1
    }
-    set_property USER_COMMENTS.comment_3 "Filtro FIR. Compensa la respuesta del CIC y decima -> 100ksps" [get_bd_cells /rx_0/fifo_0]
-  set_property USER_COMMENTS.comment_4 "Enter Comments here" [get_bd_cells /rx_0/fifo_0]
+    set_property USER_COMMENTS.comment_4 "Enter Comments here" [get_bd_cells /rx_0/fifo_0]
   set_property -dict [list \
     CONFIG.ALWAYS_READY {TRUE} \
     CONFIG.M_AXIS_TDATA_WIDTH {32} \
@@ -528,12 +662,12 @@ proc create_hier_cell_rx_0 { parentCell nameHier } {
   set_property -dict [list \
     CONFIG.Clock_Frequency {125} \
     CONFIG.Filter_Type {Decimation} \
-    CONFIG.Fixed_Or_Initial_Rate {125} \
+    CONFIG.Fixed_Or_Initial_Rate {651} \
     CONFIG.HAS_ARESETN {true} \
     CONFIG.Input_Data_Width {24} \
     CONFIG.Input_Sample_Frequency {125} \
-    CONFIG.Maximum_Rate {125} \
-    CONFIG.Minimum_Rate {125} \
+    CONFIG.Maximum_Rate {651} \
+    CONFIG.Minimum_Rate {651} \
     CONFIG.Number_Of_Stages {6} \
     CONFIG.Output_Data_Width {32} \
     CONFIG.Quantization {Truncation} \
@@ -1059,7 +1193,6 @@ proc create_root_design { parentCell } {
     CONFIG.PCW_SPI_PERIPHERAL_CLKSRC {IO PLL} \
     CONFIG.PCW_SPI_PERIPHERAL_FREQMHZ {166.666666} \
     CONFIG.PCW_SPI_PERIPHERAL_VALID {1} \
-    CONFIG.PCW_S_AXI_HP0_DATA_WIDTH {64} \
     CONFIG.PCW_S_AXI_HP1_DATA_WIDTH {64} \
     CONFIG.PCW_S_AXI_HP2_DATA_WIDTH {64} \
     CONFIG.PCW_S_AXI_HP3_DATA_WIDTH {64} \
@@ -1162,6 +1295,8 @@ proc create_root_design { parentCell } {
     CONFIG.PCW_USE_AXI_NONSECURE {0} \
     CONFIG.PCW_USE_CROSS_TRIGGER {0} \
     CONFIG.PCW_USE_M_AXI_GP1 {1} \
+    CONFIG.PCW_USE_S_AXI_ACP {0} \
+    CONFIG.PCW_USE_S_AXI_HP0 {1} \
     CONFIG.PCW_WDT_PERIPHERAL_CLKSRC {CPU_1X} \
     CONFIG.PCW_WDT_PERIPHERAL_DIVISOR0 {1} \
     CONFIG.PCW_WDT_PERIPHERAL_ENABLE {0} \
@@ -1211,31 +1346,17 @@ proc create_root_design { parentCell } {
   # Create instance: rx_0
   create_hier_cell_rx_0 [current_bd_instance .] rx_0
 
-  # Create instance: dds_compiler_0, and set properties
-  set dds_compiler_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:dds_compiler:6.0 dds_compiler_0 ]
-  set_property -dict [list \
-    CONFIG.DDS_Clock_Rate {125} \
-    CONFIG.Has_ARESETn {true} \
-    CONFIG.Has_Phase_Out {false} \
-    CONFIG.Has_TREADY {true} \
-    CONFIG.Latency {6} \
-    CONFIG.M_DATA_Has_TUSER {Not_Required} \
-    CONFIG.Noise_Shaping {None} \
-    CONFIG.OUTPUT_FORM {Twos_Complement} \
-    CONFIG.Output_Frequency1 {0} \
-    CONFIG.Output_Width {11} \
-    CONFIG.PINC1 {0101011110111011011100110001} \
-    CONFIG.Parameter_Entry {Hardware_Parameters} \
-    CONFIG.Phase_Width {30} \
-  ] $dds_compiler_0
-
+  # Create instance: test_0
+  create_hier_cell_test_0 [current_bd_instance .] test_0
 
   # Create interface connections
+  connect_bd_intf_net -intf_net S00_AXI_1 [get_bd_intf_pins test_0/s_axi_0] [get_bd_intf_pins ps_0/M_AXI_GP1]
   connect_bd_intf_net -intf_net S_AXIS_A_1 [get_bd_intf_pins rx_0/s_axis_adc] [get_bd_intf_pins adc_0/m_axis]
-  connect_bd_intf_net -intf_net dds_compiler_0_M_AXIS_DATA [get_bd_intf_pins dds_compiler_0/M_AXIS_DATA] [get_bd_intf_pins dac_0/s_axis]
   connect_bd_intf_net -intf_net ps_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins ps_0/DDR]
   connect_bd_intf_net -intf_net ps_0_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins ps_0/FIXED_IO]
   connect_bd_intf_net -intf_net ps_0_M_AXI_GP0 [get_bd_intf_pins ps_0/M_AXI_GP0] [get_bd_intf_pins rx_0/s_axi]
+  connect_bd_intf_net -intf_net test_0_m_axi_ram [get_bd_intf_pins test_0/m_axi_ram] [get_bd_intf_pins ps_0/S_AXI_HP0]
+  connect_bd_intf_net -intf_net test_0_m_axis_0 [get_bd_intf_pins dac_0/s_axis] [get_bd_intf_pins test_0/m_axis_fifo]
 
   # Create port connections
   connect_bd_net -net adc_0_adc_csn  [get_bd_pins adc_0/adc_csn] \
@@ -1266,8 +1387,9 @@ proc create_root_design { parentCell } {
   [get_bd_pins adc_0/aclk] \
   [get_bd_pins dac_0/aclk] \
   [get_bd_pins rx_0/aclk] \
-  [get_bd_pins dds_compiler_0/aclk] \
-  [get_bd_pins ps_0/M_AXI_GP1_ACLK]
+  [get_bd_pins ps_0/M_AXI_GP1_ACLK] \
+  [get_bd_pins test_0/aclk] \
+  [get_bd_pins ps_0/S_AXI_HP0_ACLK]
   connect_bd_net -net pll_0_clk_out2  [get_bd_pins pll_0/clk_out2] \
   [get_bd_pins dac_0/ddr_clk]
   connect_bd_net -net pll_0_clk_out3  [get_bd_pins pll_0/clk_out3] \
@@ -1277,9 +1399,10 @@ proc create_root_design { parentCell } {
   [get_bd_pins dac_0/locked]
   connect_bd_net -net rst_0_peripheral_aresetn  [get_bd_pins rst_0/peripheral_aresetn] \
   [get_bd_pins rx_0/aresetn] \
-  [get_bd_pins dds_compiler_0/aresetn]
+  [get_bd_pins test_0/aresetn]
 
   # Create address segments
+  assign_bd_address -offset 0x80000000 -range 0x40000000 -target_address_space [get_bd_addr_spaces ps_0/Data] [get_bd_addr_segs test_0/axi_hub_0/s_axi/reg0] -force
   assign_bd_address -offset 0x40000000 -range 0x40000000 -target_address_space [get_bd_addr_spaces ps_0/Data] [get_bd_addr_segs rx_0/hub_0/s_axi/reg0] -force
 
 

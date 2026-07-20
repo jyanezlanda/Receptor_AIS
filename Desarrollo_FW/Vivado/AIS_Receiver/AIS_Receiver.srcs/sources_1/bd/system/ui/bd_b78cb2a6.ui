@@ -1,22 +1,13 @@
 {
    "ActiveEmotionalView":"Default View",
-   "Default View_ScaleFactor":"0.534946",
-   "Default View_TopLeft":"1322,-482",
+   "Default View_ScaleFactor":"0.658595",
+   "Default View_TopLeft":"1773,-361",
    "ExpandedHierarchyInLayout":"",
    "HierExpandStatus_comment_0":"false",
    "HierExpandStatus_comment_1":"false",
    "HierExpandStatus_comment_2":"false",
    "HierExpandStatus_comment_3":"false",
-   "comment_0":"Hace la multiplicacion entre I y Q de la senal del ADC y el oscilador local complejo",
-   "comment_1":"Filtro FIR. Compensa la respuesta del CIC y decima -> 100ksps",
-   "comment_2":"FIFO para guardar los datos",
-   "comment_3":"CIC decimador -> 1Msps",
-   "commentid":"comment_0|comment_1|comment_2|comment_3|",
-   "fillcolor_comment_1":"",
-   "font_comment_0":"12",
-   "font_comment_1":"12",
-   "font_comment_2":"12",
-   "font_comment_3":"12",
+   "commentid":"",
    "guistr":"# # String gsaved with Nlview 7.8.0 2024-04-26 e1825d835c VDI=44 GEI=38 GUI=JA:21.0
 #  -string -flagsOSRD
 preplace port s_axi -pg 1 -lvl 0 -x 0 -y 220 -defaultsOSRD
@@ -57,22 +48,8 @@ preplace netloc lfsr_0_m_axis 1 3 1 1160 -20n
 preplace netloc mult_0_M_AXIS_DOUT 1 4 1 N -30
 preplace netloc phase_0_m_axis 1 2 1 N 10
 preplace netloc rx_0_m_axis 1 10 1 N -20
-preplace cgraphic comment_3 place top 1814 371 textcolor 4 linecolor 3 linewidth 2
-preplace cgraphic comment_2 place right -1599 -163 textcolor 4 linecolor 3 linewidth 2
-preplace cgraphic comment_1 place left -478 -174 textcolor 4 linecolor 3 linewidth 2
-preplace cgraphic comment_0 place left 949 -175 textcolor 4 linecolor 3 linewidth 2
 levelinfo -pg 1 0 430 680 970 1290 1600 1920 2260 2550 2820 3120 3460 3630
 pagesize -pg 1 -db -bbox -sgen -140 -610 4620 670
-",
-   "linecolor_comment_1":"",
-   "linktoobj_comment_1":"/rx_0/fifo_0",
-   "linktotype_comment_1":"bd_cell",
-   "textcolor_comment_1":""
+"
 }
 0
-{
-   "/comment_2":"comment_0",
-   "/comment_5":"comment_2",
-   "/comment_9":"comment_3",
-   "/rx_0/fifo_0/comment_3":"comment_1"
-}

@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<GenRun Id="synth_1" LaunchPart="xc7z010clg400-1" LaunchTime="1781663833" LaunchIncrCheckpoint="$PSRCDIR/utils_1/imports/synth_1/system_wrapper.dcp">
-  <File Type="PA-TCL" Name="system_wrapper.tcl"/>
+<GenRun Id="synth_1" LaunchPart="xc7z010clg400-1" LaunchTime="1784419592" LaunchIncrCheckpoint="$PSRCDIR/utils_1/imports/synth_1/system_wrapper.dcp">
   <File Type="REPORTS-TCL" Name="system_wrapper_reports.tcl"/>
-  <File Type="RDS-RDS" Name="system_wrapper.vds"/>
-  <File Type="RDS-PROPCONSTRS" Name="system_wrapper_drc_synth.rpt"/>
   <File Type="RDS-UTIL" Name="system_wrapper_utilization_synth.rpt"/>
   <File Type="RDS-UTIL-PB" Name="system_wrapper_utilization_synth.pb"/>
+  <File Type="PA-TCL" Name="system_wrapper.tcl"/>
+  <File Type="RDS-RDS" Name="system_wrapper.vds"/>
   <File Type="RDS-DCP" Name="system_wrapper.dcp"/>
-  <File Type="VDS-TIMINGSUMMARY" Name="system_wrapper_timing_summary_synth.rpt"/>
-  <File Type="VDS-TIMING-PB" Name="system_wrapper_timing_summary_synth.pb"/>
   <FileSet Name="sources" Type="DesignSrcs" RelSrcDir="$PSRCDIR/sources_1" RelGenDir="$PGENDIR/sources_1">
     <Filter Type="Srcs"/>
     <File Path="$PSRCDIR/sources_1/imports/red-pitaya-notes/cores/axis_accumulator.v">
@@ -45,16 +42,6 @@
       <FileInfo>
         <Attr Name="AutoDisabled" Val="1"/>
         <Attr Name="ImportPath" Val="$PPRDIR/../red-pitaya-notes/cores/axis_averager.v"/>
-        <Attr Name="ImportTime" Val="1779048073"/>
-        <Attr Name="UsedIn" Val="synthesis"/>
-        <Attr Name="UsedIn" Val="implementation"/>
-        <Attr Name="UsedIn" Val="simulation"/>
-      </FileInfo>
-    </File>
-    <File Path="$PSRCDIR/sources_1/imports/red-pitaya-notes/cores/axis_bram_reader.v">
-      <FileInfo>
-        <Attr Name="AutoDisabled" Val="1"/>
-        <Attr Name="ImportPath" Val="$PPRDIR/../red-pitaya-notes/cores/axis_bram_reader.v"/>
         <Attr Name="ImportTime" Val="1779048073"/>
         <Attr Name="UsedIn" Val="synthesis"/>
         <Attr Name="UsedIn" Val="implementation"/>
@@ -131,30 +118,10 @@
         <Attr Name="UsedIn" Val="simulation"/>
       </FileInfo>
     </File>
-    <File Path="$PSRCDIR/sources_1/imports/red-pitaya-notes/cores/axis_iir_filter.v">
-      <FileInfo>
-        <Attr Name="AutoDisabled" Val="1"/>
-        <Attr Name="ImportPath" Val="$PPRDIR/../red-pitaya-notes/cores/axis_iir_filter.v"/>
-        <Attr Name="ImportTime" Val="1779048073"/>
-        <Attr Name="UsedIn" Val="synthesis"/>
-        <Attr Name="UsedIn" Val="implementation"/>
-        <Attr Name="UsedIn" Val="simulation"/>
-      </FileInfo>
-    </File>
     <File Path="$PSRCDIR/sources_1/imports/red-pitaya-notes/cores/axis_interpolator.v">
       <FileInfo>
         <Attr Name="AutoDisabled" Val="1"/>
         <Attr Name="ImportPath" Val="$PPRDIR/../red-pitaya-notes/cores/axis_interpolator.v"/>
-        <Attr Name="ImportTime" Val="1779048073"/>
-        <Attr Name="UsedIn" Val="synthesis"/>
-        <Attr Name="UsedIn" Val="implementation"/>
-        <Attr Name="UsedIn" Val="simulation"/>
-      </FileInfo>
-    </File>
-    <File Path="$PSRCDIR/sources_1/imports/red-pitaya-notes/cores/axis_keyer.v">
-      <FileInfo>
-        <Attr Name="AutoDisabled" Val="1"/>
-        <Attr Name="ImportPath" Val="$PPRDIR/../red-pitaya-notes/cores/axis_keyer.v"/>
         <Attr Name="ImportTime" Val="1779048073"/>
         <Attr Name="UsedIn" Val="synthesis"/>
         <Attr Name="UsedIn" Val="implementation"/>
@@ -265,36 +232,6 @@
       <FileInfo>
         <Attr Name="AutoDisabled" Val="1"/>
         <Attr Name="ImportPath" Val="$PPRDIR/../red-pitaya-notes/cores/axis_pulse_height_analyzer.v"/>
-        <Attr Name="ImportTime" Val="1779048073"/>
-        <Attr Name="UsedIn" Val="synthesis"/>
-        <Attr Name="UsedIn" Val="implementation"/>
-        <Attr Name="UsedIn" Val="simulation"/>
-      </FileInfo>
-    </File>
-    <File Path="$PSRCDIR/sources_1/imports/red-pitaya-notes/cores/axis_ram_reader.v">
-      <FileInfo>
-        <Attr Name="AutoDisabled" Val="1"/>
-        <Attr Name="ImportPath" Val="$PPRDIR/../red-pitaya-notes/cores/axis_ram_reader.v"/>
-        <Attr Name="ImportTime" Val="1779048073"/>
-        <Attr Name="UsedIn" Val="synthesis"/>
-        <Attr Name="UsedIn" Val="implementation"/>
-        <Attr Name="UsedIn" Val="simulation"/>
-      </FileInfo>
-    </File>
-    <File Path="$PSRCDIR/sources_1/imports/red-pitaya-notes/cores/axis_ram_reader_radar.v">
-      <FileInfo>
-        <Attr Name="AutoDisabled" Val="1"/>
-        <Attr Name="ImportPath" Val="$PPRDIR/../red-pitaya-notes/cores/axis_ram_reader_radar.v"/>
-        <Attr Name="ImportTime" Val="1779048073"/>
-        <Attr Name="UsedIn" Val="synthesis"/>
-        <Attr Name="UsedIn" Val="implementation"/>
-        <Attr Name="UsedIn" Val="simulation"/>
-      </FileInfo>
-    </File>
-    <File Path="$PSRCDIR/sources_1/imports/red-pitaya-notes/cores/axis_ram_writer.v">
-      <FileInfo>
-        <Attr Name="AutoDisabled" Val="1"/>
-        <Attr Name="ImportPath" Val="$PPRDIR/../red-pitaya-notes/cores/axis_ram_writer.v"/>
         <Attr Name="ImportTime" Val="1779048073"/>
         <Attr Name="UsedIn" Val="synthesis"/>
         <Attr Name="UsedIn" Val="implementation"/>
@@ -489,6 +426,16 @@
         <Attr Name="UsedIn" Val="simulation"/>
       </FileInfo>
     </File>
+    <File Path="$PSRCDIR/sources_1/imports/red-pitaya-notes/cores/axis_bram_reader.v">
+      <FileInfo>
+        <Attr Name="AutoDisabled" Val="1"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../red-pitaya-notes/cores/axis_bram_reader.v"/>
+        <Attr Name="ImportTime" Val="1779048073"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
     <File Path="$PSRCDIR/sources_1/imports/red-pitaya-notes/cores/constant.v">
       <FileInfo>
         <Attr Name="ImportPath" Val="$PPRDIR/../red-pitaya-notes/cores/constant.v"/>
@@ -583,6 +530,13 @@
       <FileInfo>
         <Attr Name="ImportPath" Val="$PPRDIR/../red-pitaya-notes/cores/axis_fifo.v"/>
         <Attr Name="ImportTime" Val="1779048073"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/red-pitaya-notes/cores/axis_ram_reader.v">
+      <FileInfo>
         <Attr Name="UsedIn" Val="synthesis"/>
         <Attr Name="UsedIn" Val="implementation"/>
         <Attr Name="UsedIn" Val="simulation"/>
