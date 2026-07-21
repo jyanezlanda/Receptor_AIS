@@ -1,7 +1,7 @@
 {
    "ActiveEmotionalView":"Default View",
    "Default View_ScaleFactor":"1.07365",
-   "Default View_TopLeft":"247,48",
+   "Default View_TopLeft":"584,48",
    "ExpandedHierarchyInLayout":"",
    "HierExpandStatus_comment_4":"false",
    "comment_1":"Enter Comments here",
@@ -74,8 +74,8 @@ pagesize -pg 1 -db -bbox -sgen -180 0 1720 640
    "textcolor_comment_1":""
 }
 {
-   """""""""da_axi4_cnt""""""""":"1",
-   """""""""da_axi4_s2mm_cnt""""""""":"1"
+   """"""""""da_axi4_cnt"""""""""":"1",
+   """"""""""da_axi4_s2mm_cnt"""""""""":"1"
 }
 {
    "/rx_0/fifo_0/comment_4":"comment_1"

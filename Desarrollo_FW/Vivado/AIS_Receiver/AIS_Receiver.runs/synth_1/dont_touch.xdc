@@ -86,35 +86,35 @@ set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_axis
 # IP: bd/system/ip/system_axis_ram_reader_1_0/system_axis_ram_reader_1_0.xci
 set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {REF_NAME==system_axis_ram_reader_1_0 || ORIG_REF_NAME==system_axis_ram_reader_1_0} -quiet] -quiet
 
-# XDC: d:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/ip/system_pll_0_0/system_pll_0_0_board.xdc
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_pll_0_0/system_pll_0_0_board.xdc
 set_property KEEP_HIERARCHY SOFT [get_cells [split [join [get_cells -hier -filter {REF_NAME==system_pll_0_0 || ORIG_REF_NAME==system_pll_0_0} -quiet] {/inst } ]/inst ] -quiet] -quiet
 
-# XDC: d:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/ip/system_pll_0_0/system_pll_0_0.xdc
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_pll_0_0/system_pll_0_0.xdc
 #dup# set_property KEEP_HIERARCHY SOFT [get_cells [split [join [get_cells -hier -filter {REF_NAME==system_pll_0_0 || ORIG_REF_NAME==system_pll_0_0} -quiet] {/inst } ]/inst ] -quiet] -quiet
 
-# XDC: d:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/ip/system_pll_0_0/system_pll_0_0_ooc.xdc
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_pll_0_0/system_pll_0_0_ooc.xdc
 
-# XDC: d:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/ip/system_ps_0_0/system_ps_0_0.xdc
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_ps_0_0/system_ps_0_0.xdc
 set_property KEEP_HIERARCHY SOFT [get_cells [split [join [get_cells -hier -filter {REF_NAME==system_ps_0_0 || ORIG_REF_NAME==system_ps_0_0} -quiet] {/inst } ]/inst ] -quiet] -quiet
 
-# XDC: d:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/ip/system_rst_0_0/system_rst_0_0_board.xdc
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_rst_0_0/system_rst_0_0_board.xdc
 set_property KEEP_HIERARCHY SOFT [get_cells [split [join [get_cells -hier -filter {REF_NAME==system_rst_0_0 || ORIG_REF_NAME==system_rst_0_0} -quiet] {/U0 } ]/U0 ] -quiet] -quiet
 
-# XDC: d:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/ip/system_dds_0_0/system_dds_0_0_ooc.xdc
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_dds_0_0/system_dds_0_0_ooc.xdc
 
-# XDC: d:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/ip/system_mult_0_0/system_mult_0_0_ooc.xdc
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_mult_0_0/system_mult_0_0_ooc.xdc
 
-# XDC: d:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/ip/system_bcast_0_1/system_bcast_0_1_ooc.xdc
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_bcast_0_1/system_bcast_0_1_ooc.xdc
 
-# XDC: d:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/ip/system_cic_0_0/system_cic_0_0_ooc.xdc
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_cic_0_0/system_cic_0_0_ooc.xdc
 
-# XDC: d:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/ip/system_comb_0_1/system_comb_0_1_ooc.xdc
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_comb_0_1/system_comb_0_1_ooc.xdc
 
-# XDC: d:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/ip/system_conv_0_0/system_conv_0_0_ooc.xdc
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_conv_0_0/system_conv_0_0_ooc.xdc
 
-# XDC: d:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/ip/system_fir_0_0/constraints/fir_compiler_v7_2.xdc
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_fir_0_0/constraints/fir_compiler_v7_2.xdc
 set_property KEEP_HIERARCHY SOFT [get_cells [split [join [get_cells -hier -filter {REF_NAME==system_fir_0_0 || ORIG_REF_NAME==system_fir_0_0} -quiet] {/U0 } ]/U0 ] -quiet] -quiet
 
-# XDC: d:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/ip/system_fir_0_0/system_fir_0_0_ooc.xdc
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/ip/system_fir_0_0/system_fir_0_0_ooc.xdc
 
-# XDC: d:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.gen/sources_1/bd/system/system_ooc.xdc
+# XDC: d:/Vivado/AIS_Receiver/AIS_Receiver.gen/sources_1/bd/system/system_ooc.xdc

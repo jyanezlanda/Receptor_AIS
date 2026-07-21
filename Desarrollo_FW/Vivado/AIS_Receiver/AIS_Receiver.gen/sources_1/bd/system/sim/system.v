@@ -2,7 +2,7 @@
 //Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2025.2 (win64) Build 6299465 Fri Nov 14 19:35:11 GMT 2025
-//Date        : Sat Jul 18 21:06:31 2026
+//Date        : Mon Jul 20 23:38:16 2026
 //Host        : DESKTOP-KIRSTEN running 64-bit major release  (build 9200)
 //Command     : generate_target system.bd
 //Design      : system
@@ -265,7 +265,7 @@ module rx_0_imp_178AHDX
         .dout(slice_1_dout));
 endmodule
 
-(* CORE_GENERATION_INFO = "system,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=system,x_ipVersion=1.00.a,x_ipLanguage=VERILOG,numBlks=28,numReposBlks=26,numNonXlnxBlks=0,numHierBlks=2,maxHierDepth=1,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=15,numPkgbdBlks=0,bdsource=USER,\"\"\"\"\"\"\"da_axi4_cnt\"\"\"\"\"\"\"=1,\"\"\"\"\"\"\"da_axi4_s2mm_cnt\"\"\"\"\"\"\"=1,synth_mode=None}" *) (* HW_HANDOFF = "system.hwdef" *) 
+(* CORE_GENERATION_INFO = "system,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=system,x_ipVersion=1.00.a,x_ipLanguage=VERILOG,numBlks=28,numReposBlks=26,numNonXlnxBlks=0,numHierBlks=2,maxHierDepth=1,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=15,numPkgbdBlks=0,bdsource=USER,\"\"\"\"\"\"\"\"\"da_axi4_cnt\"\"\"\"\"\"\"\"\"=1,\"\"\"\"\"\"\"\"\"da_axi4_s2mm_cnt\"\"\"\"\"\"\"\"\"=1,synth_mode=None}" *) (* HW_HANDOFF = "system.hwdef" *) 
 module system
    (DDR_addr,
     DDR_ba,

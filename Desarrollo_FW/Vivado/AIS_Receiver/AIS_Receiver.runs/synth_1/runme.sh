@@ -25,7 +25,7 @@ else
 fi
 export LD_LIBRARY_PATH
 
-HD_PWD='D:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.runs/synth_1'
+HD_PWD='D:/Vivado/AIS_Receiver/AIS_Receiver.runs/synth_1'
 cd "$HD_PWD"
 
 HD_LOG=runme.log

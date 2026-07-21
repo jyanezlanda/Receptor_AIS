@@ -1,7 +1,7 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2025.2 (win64) Build 6299465 Fri Nov 14 19:35:11 GMT 2025
-| Date         : Sat Jul 18 21:10:03 2026
+| Date         : Mon Jul 20 23:42:04 2026
 | Host         : DESKTOP-KIRSTEN running 64-bit major release  (build 9200)
 | Command      : report_utilization -file system_wrapper_utilization_synth.rpt -pb system_wrapper_utilization_synth.pb
 | Design       : system_wrapper
@@ -31,8 +31,8 @@ Table of Contents
 +----------------------------+------+-------+------------+-----------+-------+
 |          Site Type         | Used | Fixed | Prohibited | Available | Util% |
 +----------------------------+------+-------+------------+-----------+-------+
-| Slice LUTs*                | 3018 |     0 |          0 |     17600 | 17.15 |
-|   LUT as Logic             | 2817 |     0 |          0 |     17600 | 16.01 |
+| Slice LUTs*                | 3020 |     0 |          0 |     17600 | 17.16 |
+|   LUT as Logic             | 2819 |     0 |          0 |     17600 | 16.02 |
 |   LUT as Memory            |  201 |     0 |          0 |      6000 |  3.35 |
 |     LUT as Distributed RAM |    0 |     0 |            |           |       |
 |     LUT as Shift Register  |  201 |     0 |            |           |       |
@@ -158,8 +158,8 @@ Warning! For any ECO changes, please run place_design if there are unplaced inst
 |  Ref Name | Used |  Functional Category |
 +-----------+------+----------------------+
 | FDRE      | 4278 |         Flop & Latch |
+| LUT6      |  912 |                  LUT |
 | LUT2      |  912 |                  LUT |
-| LUT6      |  910 |                  LUT |
 | LUT4      |  363 |                  LUT |
 | LUT3      |  361 |                  LUT |
 | CARRY4    |  327 |           CarryLogic |

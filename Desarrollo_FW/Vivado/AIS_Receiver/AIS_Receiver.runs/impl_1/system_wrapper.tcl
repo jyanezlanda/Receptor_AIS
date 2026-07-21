@@ -1,5 +1,5 @@
 namespace eval ::optrace {
-  variable script "D:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.runs/impl_1/system_wrapper.tcl"
+  variable script "D:/Vivado/AIS_Receiver/AIS_Receiver.runs/impl_1/system_wrapper.tcl"
   variable category "vivado_impl"
 }
 
@@ -97,8 +97,6 @@ proc step_failed { step } {
 OPTRACE "impl_1" END { }
 }
 
-set_msg_config -id {Common 17-41} -limit 10000000
-set_msg_config -id {HDL-1065} -limit 10000
 
 OPTRACE "impl_1" START { ROLLUP_1 }
 OPTRACE "Phase: Init Design" START { ROLLUP_AUTO }
@@ -106,7 +104,6 @@ start_step init_design
 set ACTIVE_STEP init_design
 set rc [catch {
   create_msg_db init_design.pb
-  set_param tcl.statsThreshold 360
   set_param general.usePosixSpawnForFork 1
   set_param chipscope.maxJobs 2
   set_param runs.launchOptions { -jobs 4  }
@@ -116,21 +113,21 @@ OPTRACE "create in-memory project" START { }
   set_param project.singleFileAddWarning.threshold 0
 OPTRACE "create in-memory project" END { }
 OPTRACE "set parameters" START { }
-  set_property webtalk.parent_dir D:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.cache/wt [current_project]
-  set_property parent.project_path D:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.xpr [current_project]
-  set_property ip_output_repo D:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.cache/ip [current_project]
+  set_property webtalk.parent_dir D:/Vivado/AIS_Receiver/AIS_Receiver.cache/wt [current_project]
+  set_property parent.project_path D:/Vivado/AIS_Receiver/AIS_Receiver.xpr [current_project]
+  set_property ip_output_repo D:/Vivado/AIS_Receiver/AIS_Receiver.cache/ip [current_project]
   set_property ip_cache_permissions {read write} [current_project]
   set_property XPM_LIBRARIES {XPM_CDC XPM_FIFO XPM_MEMORY} [current_project]
 OPTRACE "set parameters" END { }
 OPTRACE "add files" START { }
-  add_files -quiet D:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.runs/synth_1/system_wrapper.dcp
+  add_files -quiet D:/Vivado/AIS_Receiver/AIS_Receiver.runs/synth_1/system_wrapper.dcp
   set_msg_config -source 4 -id {BD 41-1661} -limit 0
   set_param project.isImplRun true
-  add_files D:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.srcs/sources_1/bd/system/system.bd
+  add_files D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/sources_1/bd/system/system.bd
   set_param project.isImplRun false
 OPTRACE "read constraints: implementation" START { }
-  read_xdc D:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.srcs/constrs_1/imports/cfg/clocks.xdc
-  read_xdc D:/Vivado/AIS_Receiver_Fifo_Test/AIS_Receiver_Fifo_Test.srcs/constrs_1/imports/cfg/ports.xdc
+  read_xdc D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/constrs_1/imports/cfg/clocks.xdc
+  read_xdc D:/Vivado/AIS_Receiver/AIS_Receiver.srcs/constrs_1/imports/cfg/ports.xdc
 OPTRACE "read constraints: implementation" END { }
 OPTRACE "read constraints: implementation_pre" START { }
 OPTRACE "read constraints: implementation_pre" END { }
