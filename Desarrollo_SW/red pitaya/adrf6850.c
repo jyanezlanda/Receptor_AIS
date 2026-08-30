@@ -7,6 +7,7 @@
  */
 
 #include "adrf6850.h"
+#include <unistd.h>
 
 /* ------------------------------------------------------------------------
  * Internal state
@@ -24,19 +25,16 @@ static adrf6850_state_t g_dev;
  * The part powers up in I2C mode. Three pulses on CS latch the SPI protocol
  * on the third rising edge; once locked it can only be released by cycling
  * the supply (Data Sheet, "Serial Interface Selection", Figure 65).
+ *
  */
 static void adrf6850_spi_lock(void)
 {
     uint8_t i;
-
-    adrf6850_hw_cs(1);
-    adrf6850_hw_delay_us(1);
+    uint8_t dummy = 0x00U;
 
     for (i = 0; i < 3U; i++) {
-        adrf6850_hw_cs(0);
-        adrf6850_hw_delay_us(1);
-        adrf6850_hw_cs(1);          /* third rising edge locks SPI mode */
-        adrf6850_hw_delay_us(1);
+        adrf6850_hw_spi_write(&dummy, 1U);
+        usleep(1U);
     }
 }
 
@@ -51,9 +49,7 @@ void adrf6850_write_reg(uint8_t addr, uint8_t data)
     frame[1] = addr;
     frame[2] = data;
 
-    adrf6850_hw_cs(0);
     adrf6850_hw_spi_write(frame, 3U);
-    adrf6850_hw_cs(1);
 }
 
 /**
@@ -68,16 +64,12 @@ uint8_t adrf6850_read_reg(uint8_t addr)
     frame[0] = ADRF6850_SPI_CMD_WRITE;
     frame[1] = addr;
 
-    adrf6850_hw_cs(0);
     adrf6850_hw_spi_write(frame, 2U);
-    adrf6850_hw_cs(1);
 
     frame[0] = ADRF6850_SPI_CMD_READ;
 
-    adrf6850_hw_cs(0);
     adrf6850_hw_spi_write(frame, 1U);
     adrf6850_hw_spi_read(&data, 1U);
-    adrf6850_hw_cs(1);
 
     return data;
 }
@@ -193,12 +185,12 @@ static uint16_t adrf6850_gain_to_mv(int32_t gain_mdb, uint8_t polarity)
  */
 adrf6850_status_t adrf6850_wait_lock(uint32_t timeout_us)
 {
-    int      ldet;
+    int ldet;
     uint32_t elapsed = 0U;
 
     ldet = adrf6850_hw_ldet_read();
     if (ldet < 0) {
-        adrf6850_hw_delay_us(300U);
+        usleep(300U);
         return ADRF6850_OK;
     }
 
@@ -206,7 +198,7 @@ adrf6850_status_t adrf6850_wait_lock(uint32_t timeout_us)
         if (adrf6850_hw_ldet_read() > 0) {
             return ADRF6850_OK;
         }
-        adrf6850_hw_delay_us(10U);
+        usleep(10U);
         elapsed += 10U;
     }
 
@@ -220,11 +212,8 @@ adrf6850_status_t adrf6850_wait_lock(uint32_t timeout_us)
 /**
  * @brief Full power-up of the ADRF6850 using the static configuration.
  *
- * Follows the "Initial Register Write Sequence" of the data sheet verbatim,
- * from CR30 down to CR0, including the reserved-register values, which must
- * be written even though they are undocumented. CR0 is written last because
- * that write is what transfers all double-buffered fields and starts a new
- * PLL acquisition.
+ * Follows the "Initial Register Write Sequence" of the datasheet, from
+ * CR30 down to CR0.
  *
  * @return ADRF6850_OK on success, ADRF6850_ERR_LOCK if the PLL never locked,
  *         or an error from the frequency planner.
@@ -248,15 +237,11 @@ adrf6850_status_t adrf6850_init(void)
                                    ADRF6850_CFG_VGA_POLARITY);
 
     /* Park VGAIN before the VGA is powered up. */
-    (void)adrf6850_hw_vgain_set_mv(adrf6850_gain_to_mv(0,
-                                       ADRF6850_CFG_VGA_POLARITY));
+    adrf6850_hw_vgain_set_mv(adrf6850_gain_to_mv(0, ADRF6850_CFG_VGA_POLARITY));
 
     adrf6850_spi_lock();
 
-    /*  1. CR30 = 0x00: VGA powered off and gain slope forced positive.
-     *     The data sheet is explicit about the literal value here, so the
-     *     configured polarity is deliberately NOT applied yet; it is written
-     *     together with the VGA power-up in step 33. */
+    /*  1. CR30 = 0x00: VGA powered off and gain slope forced positive. */
     adrf6850_write_reg(ADRF6850_REG_CR30, 0x00U);
 
     /*  2. Demodulator on, baseband mode/filter, VOCM source. */
@@ -290,7 +275,7 @@ adrf6850_status_t adrf6850_init(void)
     adrf6850_write_reg(ADRF6850_REG_CR21, 0x00U);
     adrf6850_write_reg(ADRF6850_REG_CR20, 0x00U);
     adrf6850_write_reg(ADRF6850_REG_CR19, 0x00U);
-    adrf6850_write_reg(ADRF6850_REG_CR18, 0x60U);   /* reserved, not 0x00 */
+    adrf6850_write_reg(ADRF6850_REG_CR18, 0x60U);   
     adrf6850_write_reg(ADRF6850_REG_CR17, 0x00U);
     adrf6850_write_reg(ADRF6850_REG_CR16, 0x00U);
     adrf6850_write_reg(ADRF6850_REG_CR15, 0x00U);
@@ -298,7 +283,7 @@ adrf6850_status_t adrf6850_init(void)
     /* 17. Lock detector control 2: 2048/3072 pulse option. */
     adrf6850_write_reg(ADRF6850_REG_CR14, 0x00U);
 
-    adrf6850_write_reg(ADRF6850_REG_CR13, 0x08U);   /* reserved, not 0x00 */
+    adrf6850_write_reg(ADRF6850_REG_CR13, 0x08U);  
 
     /* 19. PLL (and VCO) powered up. */
     adrf6850_write_reg(ADRF6850_REG_CR12, 0x18U);
@@ -328,13 +313,13 @@ adrf6850_status_t adrf6850_init(void)
     adrf6850_write_reg(ADRF6850_REG_CR5,
                        (uint8_t)((ADRF6850_CFG_REF_RDIV_EN & 0x1U) << 4));
 
-    adrf6850_write_reg(ADRF6850_REG_CR4, 0x01U);    /* reserved, not 0x00 */
+    adrf6850_write_reg(ADRF6850_REG_CR4, 0x01U);   
 
     /* 28..31. Fractional word, MSB first; CR0 last => starts acquisition. */
     adrf6850_write_reg(ADRF6850_REG_CR3, (uint8_t)((n_frac >> 24) & 0x01U));
     adrf6850_write_reg(ADRF6850_REG_CR2, (uint8_t)((n_frac >> 16) & 0xFFU));
-    adrf6850_write_reg(ADRF6850_REG_CR1, (uint8_t)((n_frac >>  8) & 0xFFU));
-    adrf6850_write_reg(ADRF6850_REG_CR0, (uint8_t)( n_frac        & 0xFFU));
+    adrf6850_write_reg(ADRF6850_REG_CR1, (uint8_t)((n_frac >> 8) & 0xFFU));
+    adrf6850_write_reg(ADRF6850_REG_CR0, (uint8_t)( n_frac & 0xFFU));
 
     /* 32. Wait for lock (260 us typical to a 1 kHz frequency error). */
     st = adrf6850_wait_lock(ADRF6850_CFG_LOCK_TIMEOUT_US);
@@ -346,18 +331,18 @@ adrf6850_status_t adrf6850_init(void)
     adrf6850_write_reg(ADRF6850_REG_CR30,
                        (uint8_t)((ADRF6850_CFG_VGA_POLARITY << 2) | 0x01U));
 
-    g_dev.initialized  = 1U;
-    g_dev.lo_hz        = ADRF6850_CFG_LO_HZ;
+    g_dev.initialized = 1U;
+    g_dev.lo_hz = ADRF6850_CFG_LO_HZ;
     g_dev.lo_actual_hz = f_actual;
-    g_dev.rfdiv        = rfdiv;
-    g_dev.n_int        = n_int;
-    g_dev.n_frac       = n_frac;
-    g_dev.gain_mdb     = ADRF6850_CFG_GAIN_MDB;
-    g_dev.vgain_mv     = vgain_mv;
-    g_dev.bb_wideband  = ADRF6850_CFG_BB_WIDEBAND;
-    g_dev.bb_fc        = (adrf6850_bb_fc_t)ADRF6850_CFG_BB_FC;
-    g_dev.cp_code      = ADRF6850_CFG_CP_CODE;
-    g_dev.autocal_off  = 0U;
+    g_dev.rfdiv = rfdiv;
+    g_dev.n_int = n_int;
+    g_dev.n_frac = n_frac;
+    g_dev.gain_mdb = ADRF6850_CFG_GAIN_MDB;
+    g_dev.vgain_mv = vgain_mv;
+    g_dev.bb_wideband = ADRF6850_CFG_BB_WIDEBAND;
+    g_dev.bb_fc = (adrf6850_bb_fc_t)ADRF6850_CFG_BB_FC;
+    g_dev.cp_code = ADRF6850_CFG_CP_CODE;
+    g_dev.autocal_off = 0U;
 
     return st;
 }
@@ -371,7 +356,7 @@ adrf6850_status_t adrf6850_init(void)
  *
  * Only the fields flagged in @c p->mask are touched. Ordering matters:
  *
- *   - CR29 (baseband filter), CR27 (LO monitor) and CR30 (VGA) are *not*
+ *   - CR29 (baseband filter), CR27 (LO monitor) and CR30 (VGA) are not
  *     double buffered and take effect immediately.
  *   - CR28 (RFDIV), CR9 (charge pump), CR7/CR6 (INT) and CR3..CR1 (FRAC) are
  *     double buffered: they are only latched when CR0 is written, which is
@@ -379,7 +364,7 @@ adrf6850_status_t adrf6850_init(void)
  *
  * If @c fast_hop is set and the requested frequency step is 100 kHz or less,
  * autocalibration is disabled (CR24, Bit 0) for a significantly faster hop.
- * The 100 kHz limit is *cumulative* since the last calibrated frequency, so
+ * The 100 kHz limit is cumulative since the last calibrated frequency, so
  * the driver tracks the accumulated offset and re-enables autocalibration as
  * soon as it would be exceeded.
  *
@@ -518,8 +503,8 @@ adrf6850_status_t adrf6850_set_lo(uint32_t lo_hz)
 {
     adrf6850_params_t p;
 
-    p.mask     = ADRF6850_UPD_LO;
-    p.lo_hz    = lo_hz;
+    p.mask = ADRF6850_UPD_LO;
+    p.lo_hz = lo_hz;
     p.fast_hop = 0U;
 
     return adrf6850_update(&p);
@@ -530,7 +515,7 @@ adrf6850_status_t adrf6850_set_gain_mdb(int32_t gain_mdb)
 {
     adrf6850_params_t p;
 
-    p.mask     = ADRF6850_UPD_GAIN;
+    p.mask = ADRF6850_UPD_GAIN;
     p.gain_mdb = gain_mdb;
 
     return adrf6850_update(&p);
@@ -541,9 +526,9 @@ adrf6850_status_t adrf6850_set_baseband(uint8_t wideband, adrf6850_bb_fc_t fc)
 {
     adrf6850_params_t p;
 
-    p.mask        = ADRF6850_UPD_BB;
+    p.mask = ADRF6850_UPD_BB;
     p.bb_wideband = wideband;
-    p.bb_fc       = fc;
+    p.bb_fc = fc;
 
     return adrf6850_update(&p);
 }
@@ -554,8 +539,8 @@ adrf6850_status_t adrf6850_set_lo_monitor(uint8_t enable,
 {
     adrf6850_params_t p;
 
-    p.mask      = ADRF6850_UPD_LOMON;
-    p.lomon_en  = enable;
+    p.mask = ADRF6850_UPD_LOMON;
+    p.lomon_en = enable;
     p.lomon_pwr = pwr;
 
     return adrf6850_update(&p);

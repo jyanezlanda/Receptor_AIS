@@ -10,11 +10,6 @@
  * so adrf6850_init() first issues the three CS pulses required to latch the
  * SPI protocol (Data Sheet, Figure 65).
  *
- * NOTE ON THE VGA GAIN: the VGA gain is *not* an SPI setting. It is an analog
- * control voltage applied to pin 43 (VGAIN), 0 V to 1.5 V, 25 mV/dB nominal.
- * The driver therefore only computes the required voltage and delegates the
- * actual output to the platform hook adrf6850_hw_vgain_set_mv(), which must
- * drive a DAC (or a filtered PWM) on the board.
  */
 
 #ifndef ADRF6850_H
@@ -230,30 +225,24 @@ typedef struct {
  * 5. PLATFORM HOOKS - implement these for your board
  * ========================================================================= */
 
-/** Drive the CS pin. @param level 0 = low (asserted), 1 = high. */
-void     adrf6850_hw_cs(uint8_t level);
+/** Send @p len bytes MSB first on the SPI bus (CS handled by spidev). */
+void adrf6850_hw_spi_write(const uint8_t *buf, uint32_t len);
 
-/** Send @p len bytes MSB first on the SPI bus (CS handled by the caller). */
-void     adrf6850_hw_spi_write(const uint8_t *buf, uint32_t len);
-
-/** Receive @p len bytes MSB first on the SPI bus (CS handled by the caller). */
-void     adrf6850_hw_spi_read(uint8_t *buf, uint32_t len);
-
-/** Busy-wait for at least @p us microseconds. */
-void     adrf6850_hw_delay_us(uint32_t us);
+/** Receive @p len bytes MSB first on the SPI bus (CS handled by spidev). */
+void adrf6850_hw_spi_read(uint8_t *buf, uint32_t len);
 
 /**
  * Read the LDET pin (Pin 40).
  * @return 1 if locked, 0 if not locked, negative if no GPIO is wired
  *         (the driver then falls back to a fixed 300 us settling delay).
  */
-int      adrf6850_hw_ldet_read(void);
+int adrf6850_hw_ldet_read(void);
 
 /**
  * Apply @p mv millivolts to the VGAIN pin (Pin 43) through a DAC or PWM.
  * @return 0 on success, negative on failure.
  */
-int      adrf6850_hw_vgain_set_mv(uint16_t mv);
+int adrf6850_hw_vgain_set_mv(uint16_t mv);
 
 /* =========================================================================
  * 6. PUBLIC API
@@ -268,9 +257,9 @@ adrf6850_status_t adrf6850_set_gain_mdb(int32_t gain_mdb);
 adrf6850_status_t adrf6850_set_baseband(uint8_t wideband, adrf6850_bb_fc_t fc);
 adrf6850_status_t adrf6850_set_lo_monitor(uint8_t enable, adrf6850_lomon_pwr_t pwr);
 
-/* Low-level helpers, exported for debug / CLI use. */
-void              adrf6850_write_reg(uint8_t addr, uint8_t data);
-uint8_t           adrf6850_read_reg(uint8_t addr);
+/* Low-level helpers for debug. */
+void adrf6850_write_reg(uint8_t addr, uint8_t data);
+uint8_t adrf6850_read_reg(uint8_t addr);
 const adrf6850_state_t *adrf6850_get_state(void);
 adrf6850_status_t adrf6850_wait_lock(uint32_t timeout_us);
 
