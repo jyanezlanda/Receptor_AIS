@@ -1,9 +1,12 @@
 Protel Design System Design Rule Check
 PCB File : C:\Users\joaco\Documents\ALMA\Receptor_AIS\Desarrollo_HW\RECEPTOR_AIS\Receptor_AIS_R00.PcbDoc
-Date     : 23/8/2026
-Time     : 20:31:26
+Date     : 2/9/2026
+Time     : 11:12:09
 
-Processing Rule : Clearance Constraint (Gap=0.152mm) (All),(All)
+Processing Rule : Clearance Constraint (Gap=0.152mm) (InNetClass('RF_50Ohm')),(All)
+Rule Violations :0
+
+Processing Rule : Clearance Constraint (Gap=0.254mm) (All),(All)
 Rule Violations :0
 
 Processing Rule : Short-Circuit Constraint (Allowed=No) (All),(All)
@@ -51,4 +54,4 @@ Rule Violations :0
 
 Violations Detected : 0
 Waived Violations : 0
-Time Elapsed        : 00:00:01
+Time Elapsed        : 00:00:00

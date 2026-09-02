@@ -1,0 +1,27 @@
+Output: Gerber X2 Files
+Type  : GerberX2
+From  : Variant [[No Variations]] of Project [RECEPTOR_AIS.PrjPcb]
+   Generated File[Receptor_AIS_R00.GTL]
+   Generated File[Receptor_AIS_R00.G1]
+   Generated File[Receptor_AIS_R00.G2]
+   Generated File[Receptor_AIS_R00.GBL]
+   Generated File[Receptor_AIS_R00.GTO]
+   Generated File[Receptor_AIS_R00.GBO]
+   Generated File[Receptor_AIS_R00.GTS]
+   Generated File[Receptor_AIS_R00.GBS]
+   Generated File[Receptor_AIS_R00.GTP]
+   Generated File[Receptor_AIS_R00.GBP]
+   Generated File[Receptor_AIS_R00.GM1]
+   Generated File[Receptor_AIS_R00.GM]
+   Generated File[Receptor_AIS_R00.GBR1]
+   Generated File[Receptor_AIS_R00.GBR2]
+   Generated File[Receptor_AIS_R00.GD1]
+   Generated File[Receptor_AIS_R00.GG1]
+   Generated File[Receptor_AIS_R00.EXTREP]
+   Generated File[Receptor_AIS_R00.REP]
+
+
+Files Generated   : 18
+Documents Printed : 0
+
+Finished Output Generation At 11:26:56 On 2/9/2026
