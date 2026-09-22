@@ -1,0 +1,26 @@
+{
+   "ActiveEmotionalView":"Default View",
+   "Default View_ScaleFactor":"1.0",
+   "Default View_TopLeft":"-335,-154",
+   "ExpandedHierarchyInLayout":"",
+   "guistr":"# # String gsaved with Nlview 7.8.0 2024-04-26 e1825d835c VDI=44 GEI=38 GUI=JA:21.0
+#  -string -flagsOSRD
+preplace port m_axis -pg 1 -lvl 3 -x 590 -y 90 -defaultsOSRD
+preplace port port-id_clk_0 -pg 1 -lvl 0 -x -10 -y 20 -defaultsOSRD
+preplace port port-id_aresetn_0 -pg 1 -lvl 0 -x -10 -y 40 -defaultsOSRD
+preplace port port-id_bit_in -pg 1 -lvl 0 -x -10 -y 120 -defaultsOSRD
+preplace port port-id_bit_in_valid -pg 1 -lvl 0 -x -10 -y 140 -defaultsOSRD
+preplace inst gmsk_nrzi_decode_0 -pg 1 -lvl 1 -x 160 -y 110 -defaultsOSRD
+preplace inst gmsk_bit_pack32_out -pg 1 -lvl 2 -x 440 -y 90 -defaultsOSRD
+preplace netloc aresetn_0_1 1 0 2 30 20 290
+preplace netloc bit_in_1 1 0 1 NJ 120
+preplace netloc bit_in_valid_1 1 0 1 NJ 140
+preplace netloc clk_0_1 1 0 2 20 10 300
+preplace netloc gmsk_nrzi_decode_0_bit_out 1 1 1 N 100
+preplace netloc gmsk_nrzi_decode_0_bit_out_valid 1 1 1 N 120
+preplace netloc gmsk_bit_pack32_0_m_axis 1 2 1 N 90
+levelinfo -pg 1 -10 160 440 590
+pagesize -pg 1 -db -bbox -sgen -150 0 690 200
+"
+}
+0

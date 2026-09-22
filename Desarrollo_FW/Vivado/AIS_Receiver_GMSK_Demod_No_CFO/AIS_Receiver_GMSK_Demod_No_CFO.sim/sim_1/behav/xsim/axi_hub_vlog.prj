@@ -1,0 +1,12 @@
+# compile verilog/system verilog design source files
+verilog xil_defaultlib  --include "../../../../../../Programas/AMDDesignTools/2025.2/Vivado/data/rsb/busdef" --include "../../../../AIS_Receiver_GMSK_Demod.gen/sources_1/bd/system/ipshared/a415" --include "../../../../AIS_Receiver_GMSK_Demod.gen/sources_1/bd/system/ipshared/ec67/hdl" --include "../../../../AIS_Receiver_GMSK_Demod.gen/sources_1/bd/system/ipshared/9a25/hdl" --include "../../../../AIS_Receiver_GMSK_Demod.gen/sources_1/bd/system/ipshared/434f/hdl" --include "D:/Programas/AMDDesignTools/2025.2/Vivado/data/xilinx_vip/include" \
+"../../../../AIS_Receiver_GMSK_Demod.srcs/sources_1/imports/red-pitaya-notes/modules/inout_buffer.v" \
+"../../../../AIS_Receiver_GMSK_Demod.srcs/sources_1/imports/red-pitaya-notes/modules/input_buffer.v" \
+"../../../../AIS_Receiver_GMSK_Demod.srcs/sources_1/imports/red-pitaya-notes/modules/output_buffer.v" \
+"../../../../AIS_Receiver_GMSK_Demod.srcs/sources_1/imports/red-pitaya-notes/cores/axi_hub.v" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort

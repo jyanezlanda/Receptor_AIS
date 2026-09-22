@@ -1,0 +1,46 @@
+{
+   "ActiveEmotionalView":"Default View",
+   "Default View_ScaleFactor":"0.705882",
+   "Default View_TopLeft":"-347,3",
+   "ExpandedHierarchyInLayout":"",
+   "guistr":"# # String gsaved with Nlview 7.8.0 2024-04-26 e1825d835c VDI=44 GEI=38 GUI=JA:21.0
+#  -string -flagsOSRD
+preplace port m_axis1 -pg 1 -lvl 4 -x 1050 -y 560 -defaultsOSRD
+preplace port s_axis -pg 1 -lvl 0 -x 0 -y 60 -defaultsOSRD
+preplace port port-id_clk_0 -pg 1 -lvl 0 -x 0 -y 80 -defaultsOSRD
+preplace port port-id_aresetn_0 -pg 1 -lvl 0 -x 0 -y 100 -defaultsOSRD
+preplace port port-id_sel_0 -pg 1 -lvl 0 -x 0 -y 530 -defaultsOSRD
+preplace portBus sel -pg 1 -lvl 0 -x 0 -y 660 -defaultsOSRD
+preplace inst gmsk_discriminador -pg 1 -lvl 2 -x 520 -y 320 -defaultsOSRD
+preplace inst gmsk_squelch_calib -pg 1 -lvl 2 -x 520 -y 520 -defaultsOSRD
+preplace inst gmsk_salida -pg 1 -lvl 1 -x 180 -y 240 -defaultsOSRD
+preplace inst gmsk_simbolo -pg 1 -lvl 3 -x 890 -y 320 -defaultsOSRD
+preplace inst gmsk_selector8_0 -pg 1 -lvl 3 -x 890 -y 560 -defaultsOSRD
+preplace inst gmsk_iq_unpack32_fir -pg 1 -lvl 2 -x 520 -y 110 -defaultsOSRD
+preplace inst gmsk_axis_broadcast2_fir -pg 1 -lvl 1 -x 180 -y 80 -defaultsOSRD
+preplace netloc aresetn_0_1 1 0 3 20 340 330 220 720
+preplace netloc aresetn_1 1 0 3 40 370 360J 230 700
+preplace netloc clk_0_1 1 0 3 30 330 320 210 750
+preplace netloc gmsk_discriminador_m2_axis_tdata 1 1 2 350 400 680
+preplace netloc gmsk_discriminador_m2_axis_tvalid 1 1 2 360 410 690
+preplace netloc gmsk_simbolo_bit_crudo_tdata 1 0 4 60 350 300J 190 NJ 190 1020
+preplace netloc gmsk_simbolo_bit_crudo_tvalid 1 0 4 50 360 340J 200 NJ 200 1030
+preplace netloc sel_0_1 1 0 2 NJ 530 NJ
+preplace netloc sel_1 1 0 3 NJ 660 NJ 660 NJ
+preplace netloc gmsk_axis_broadcast2_1_m0_axis1 1 1 1 350 70n
+preplace netloc gmsk_discriminador_m_axis_soft 1 2 1 N 290
+preplace netloc gmsk_salida_m_axis 1 1 1 310 240n
+preplace netloc gmsk_squelch_calib_m_axis 1 2 1 730 460n
+preplace netloc gmsk_rotador_m_axis 1 2 1 760 110n
+preplace netloc gmsk_discriminador_m_axis 1 2 1 740 310n
+preplace netloc Conn1 1 3 1 N 560
+preplace netloc gmsk_squelch_calib_m_axis2 1 2 1 710 500n
+preplace netloc gmsk_squelch_calib_m_axis3 1 2 1 730 500n
+preplace netloc gmsk_squelch_calib_m_axis4 1 2 1 N 540
+preplace netloc gmsk_axis_broadcast2_0_m1_axis 1 1 1 N 90
+preplace netloc Conn2 1 0 1 NJ 60
+levelinfo -pg 1 0 180 520 890 1050
+pagesize -pg 1 -db -bbox -sgen -120 0 1160 720
+"
+}
+0
