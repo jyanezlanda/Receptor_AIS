@@ -1,0 +1,37 @@
+{
+   "ActiveEmotionalView":"Default View",
+   "Default View_ScaleFactor":"1.08588",
+   "Default View_TopLeft":"448,-50",
+   "ExpandedHierarchyInLayout":"",
+   "guistr":"# # String gsaved with Nlview 7.8.0 2024-04-26 e1825d835c VDI=44 GEI=38 GUI=JA:21.0
+#  -string -flagsOSRD
+preplace port s_axis_iq -pg 1 -lvl 0 -x 0 -y 200 -defaultsOSRD
+preplace port m_axis_soft -pg 1 -lvl 5 -x 1410 -y 330 -defaultsOSRD
+preplace port port-id_clk_0 -pg 1 -lvl 0 -x 0 -y 60 -defaultsOSRD
+preplace port port-id_aresetn_0 -pg 1 -lvl 0 -x 0 -y 80 -defaultsOSRD
+preplace port port-id_mag_disc_tvalid -pg 1 -lvl 5 -x 1410 -y 230 -defaultsOSRD
+preplace portBus dout -pg 1 -lvl 5 -x 1410 -y 170 -defaultsOSRD
+preplace inst cmpy_discriminador -pg 1 -lvl 2 -x 450 -y 250 -defaultsOSRD
+preplace inst gmsk_discriminator_p_0 -pg 1 -lvl 1 -x 160 -y 220 -defaultsOSRD
+preplace inst cordic_discriminador -pg 1 -lvl 3 -x 800 -y 270 -defaultsOSRD
+preplace inst gmsk_soft_scale_0 -pg 1 -lvl 4 -x 1200 -y 330 -defaultsOSRD
+preplace inst axis_lfsr_disc -pg 1 -lvl 1 -x 160 -y 70 -defaultsOSRD
+preplace inst phase_slice_disc_0 -pg 1 -lvl 3 -x 800 -y 130 -defaultsOSRD
+preplace inst mag_slice_disc_0 -pg 1 -lvl 4 -x 1200 -y 170 -defaultsOSRD
+preplace netloc aresetn_0_1 1 0 4 20 300 300 360 610 370 N
+preplace netloc clk_0_1 1 0 4 30 310 290 350 600 350 N
+preplace netloc cordic_discriminador_m_axis_dout_tdata 1 2 2 610 190 990
+preplace netloc cordic_discriminador_m_axis_dout_tvalid 1 3 2 1010 230 NJ
+preplace netloc mag_slice_disc_0_dout 1 4 1 NJ 170
+preplace netloc phase_slice_disc_0_dout 1 3 1 1000J 130n
+preplace netloc axis_lfsr_0_m_axis 1 1 1 290 70n
+preplace netloc cmpy_discriminador_M_AXIS_DOUT 1 2 1 N 250
+preplace netloc gmsk_axis_broadcast2_1_m0_axis1 1 0 1 NJ 200
+preplace netloc gmsk_discriminator_p_0_m_axis_a 1 1 1 N 210
+preplace netloc gmsk_discriminator_p_0_m_axis_b 1 1 1 N 230
+preplace netloc gmsk_soft_scale_0_m_axis_soft 1 4 1 NJ 330
+levelinfo -pg 1 0 160 450 800 1200 1410
+pagesize -pg 1 -db -bbox -sgen -120 0 1570 430
+"
+}
+0

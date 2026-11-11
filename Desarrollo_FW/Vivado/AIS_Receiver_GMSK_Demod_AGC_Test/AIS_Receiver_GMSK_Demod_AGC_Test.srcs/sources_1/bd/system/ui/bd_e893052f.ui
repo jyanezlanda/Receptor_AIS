@@ -1,0 +1,22 @@
+{
+   "ActiveEmotionalView":"Default View",
+   "Default View_ScaleFactor":"1.0",
+   "Default View_TopLeft":"-183,-422",
+   "ExpandedHierarchyInLayout":"",
+   "guistr":"# # String gsaved with Nlview 7.8.0 2024-04-26 e1825d835c VDI=44 GEI=38 GUI=JA:21.0
+#  -string -flagsOSRD
+preplace inst cordic_0 -pg 1 -lvl 3 -x 740 -y -100 -defaultsOSRD
+preplace inst cmpy_discriminator_0 -pg 1 -lvl 2 -x 400 -y -120 -defaultsOSRD
+preplace inst gmsk_discriminator_p_0 -pg 1 -lvl 1 -x 110 -y -150 -defaultsOSRD
+preplace inst axis_lfsr_0 -pg 1 -lvl 1 -x 110 -y -300 -defaultsOSRD
+preplace netloc Net 1 0 3 -30 -70 270 -20 530
+preplace netloc Net1 1 0 3 -40 -230 260 -220 530
+preplace netloc gmsk_discriminator_p_0_m_axis_a 1 1 1 N -160
+preplace netloc gmsk_discriminator_p_0_m_axis_b 1 1 1 N -140
+preplace netloc cmpy_discriminator_0_M_AXIS_DOUT 1 2 1 N -120
+preplace netloc axis_lfsr_0_m_axis 1 1 1 270 -300n
+levelinfo -pg 1 -60 110 400 740 910
+pagesize -pg 1 -db -bbox -sgen -60 -360 980 160
+"
+}
+
