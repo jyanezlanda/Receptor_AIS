@@ -1,27 +1,29 @@
 """
-gmsk_tx_signal.py -- Generacion de senales de prueba tipo AIS (GMSK,
+gmsk_tx_signal.py - Generación de senales de prueba tipo AIS (GMSK,
 h=0.5, BT=0.4, siempre con NRZI) para enviar al DAC.
 
 Dos variantes de trama:
   - construir_ranura()/generar_trama_bits(): ranura de largo fijo (224
     bits), SIN bit stuffing.
   - construir_ranura_stuffed()/generar_trama_bits_stuffed(): igual, pero
-    con bit stuffing HDLC real aplicado a datos+FCS -- el largo de la
+    con bit stuffing HDLC real aplicado a datos+FCS. El largo de la
     ranura varia segun el contenido (el stuffing agrega bits), y el flag
     (01111110, seis unos seguidos) queda garantizado unico en el stream:
     nunca puede aparecer por azar dentro de los datos.
 
 construir_buffer_dac() modula (gmskmod_bc real de GNU Radio) y empaqueta
-para el DAC cualquiera de las dos, o cualquier otro stream de bits (por
-ejemplo de generar_bits_aleatorios()) -- no le importa la estructura de
-lo que recibe, solo lo codifica en NRZI y lo sube a RF.
-generar_senal_ais_prueba() encadena generar_trama_bits_stuffed() +
-construir_buffer_dac() en un solo llamado, para el caso de uso tipico
-(armar todo lo que hace falta para transmitir una trama de prueba).
+para el DAC cualquiera de las dos, o cualquier otro stream de bits. 
+No le importa la estructura de lo que recibe, solo lo codifica en NRZI 
+y lo sube a RF.
 
-El destuffing y la delimitacion de trama (busqueda de flag, CRC del lado
-receptor) NO estan aca -- eso es logica de decodificacion, se define en
-el notebook que arma el receptor.
+generar_senal_ais_prueba() encadena generar_trama_bits_stuffed() +
+construir_buffer_dac() en un solo llamado, para el caso de uso tipico.
+
+agregar_ruido() degrada una señal ya armada (el resultado de
+construir_buffer_dac()/generar_senal_ais_prueba()) a un SNR objetivo en
+dB, para pruebas de robustez. No cambia la estructura de la trama,
+solo la calidad de la señal que efectivamente llega al DAC.
+
 """
 
 import numpy as np
@@ -37,8 +39,8 @@ N_RANURA = N_PREAMBULO + len(START_FLAG) + N_PAYLOAD + N_FCS + len(START_FLAG)
 
 def crc16_ccitt(bits):
     """FCS de AIS/HDLC: CRC-16 con polinomio x^16 + x^12 + x^5 + 1, MSB
-    primero. Se usa aca solo para completar el campo FCS de la ranura de
-    prueba que se transmite -- no para validar nada del lado receptor."""
+    primero. Se usa acá solo para completar el campo FCS de la ranura de
+    prueba que se transmite. No para validar nada del lado receptor."""
     reg = 0xFFFF
     for b in bits:
         reg ^= (int(b) & 1) << 15
@@ -64,7 +66,7 @@ def nrzi_encode(bits, estado_inicial=1):
 
 def _fase_cierra(bits_secuencia):
     """True si la fase acumulada de esta secuencia (GMSK h=0.5) es
-    multiplo de 2*pi -- condicion general, valida para cualquier largo de
+    multiplo de 2*pi. Condición general, valida para cualquier largo de
     secuencia (a diferencia de 'cantidad de unos par', que solo alcanza
     cuando el largo es multiplo de 4)."""
     n_ones = int(np.sum(bits_secuencia))
@@ -88,7 +90,7 @@ def construir_ranura(data):
 def generar_trama_bits(rng):
     """Sortea un campo de datos al azar hasta que la ranura, codificada
     en NRZI, cierre en fase al repetirse en loop. Devuelve
-    (trama_completa, campo_de_datos) -- trama_completa son los bits
+    (trama_completa, campo_de_datos). trama_completa son los bits
     LOGICOS (antes de NRZI); construir_buffer_dac() los codifica.
     """
     while True:
@@ -111,8 +113,7 @@ def generar_trama_bits(rng):
 def bit_stuff(bits):
     """Bit stuffing HDLC: inserta un 0 despues de cada racha de 5 unos
     consecutivos. Garantiza que la unica racha de 6 unos seguidos en el
-    stream transmitido es la del propio flag (01111110) -- por
-    construccion, el flag no puede aparecer nunca dentro de los datos."""
+    stream transmitido es la del propio flag (01111110)."""
     bits = np.asarray(bits, dtype=np.uint8)
     out = []
     unos = 0
@@ -129,7 +130,7 @@ def bit_stuff(bits):
 
 
 def construir_ranura_stuffed(data):
-    """Arma la ranura con bit stuffing aplicado SOLO a datos+FCS -- el
+    """Arma la ranura con bit stuffing aplicado SOLO a datos+FCS. El
     training y los flags nunca se stuffean (el stuffing protege
     justamente el contenido que, sin el, podria imitar al flag)."""
     training = [0] * N_PREAMBULO
@@ -167,8 +168,7 @@ def generar_trama_bits_stuffed(rng):
 
 
 def generar_bits_aleatorios(rng, n_bits):
-    """Genera un stream de bits al azar de largo n_bits (sin ninguna
-    estructura de trama -- ni training, ni flag, ni CRC), verificando que
+    """Genera un stream de bits al azar de largo n_bits, verificando que
     cierre en fase al codificarse en NRZI y modularse en loop. Sirve para
     probar las funciones de gmsk_demod (estimacion de CFO, recuperacion
     de reloj de simbolo, etc.) de forma generica, sin depender de la
@@ -177,10 +177,9 @@ def generar_bits_aleatorios(rng, n_bits):
     Devuelve los bits LOGICOS (antes de NRZI); construir_buffer_dac() los
     codifica, igual que con generar_trama_bits().
 
-    n_bits debe ser PAR: con n_bits impar las dos condiciones de cierre
+    n_bits debe ser par: con n_bits impar las dos condiciones de cierre
     de fase (paridad de ceros + fase multiplo de 2*pi) son matematicamente
-    incompatibles entre si -- nunca hay una secuencia que cumpla las dos,
-    y la busqueda no terminaria nunca.
+    incompatibles entre sí.
     """
     if n_bits % 2 != 0:
         raise ValueError(f"n_bits debe ser par (se pidio {n_bits}): con largo "
@@ -228,11 +227,8 @@ def construir_buffer_dac(bits_trama, fs, f_lo, offset, sps_tx, l_pulso, bt,
 
     La secuencia se modula 3 veces seguidas (ya codificada en NRZI) y se
     conserva la copia del medio, para que las colas del filtro gaussiano
-    en los bordes sean las del propio loop -- asi el buffer cierra sin
-    transitorio al repetirse. La portadora se ajusta a un numero entero
-    de ciclos dentro del buffer por la misma razon. Quien haya generado
-    `bits_trama` es responsable de que cierre en fase (ver
-    generar_trama_bits()/generar_bits_aleatorios()).
+    en los bordes sean las del propio loop. La portadora se ajusta a un 
+    número entero de ciclos dentro del buffer.
 
     Devuelve (words, fc_ajustada, N_muestras, baseband_complejo).
     """
@@ -262,13 +258,13 @@ def construir_buffer_dac(bits_trama, fs, f_lo, offset, sps_tx, l_pulso, bt,
 def generar_senal_ais_prueba(rng, fs, f_lo, offset, sps_tx, l_pulso, bt,
                               amplitud, tx_burst_samples):
     """Genera una trama AIS de prueba completa (con NRZI y bit stuffing)
-    y arma el buffer listo para el DAC, en un solo llamado -- encadena
+    y arma el buffer listo para el DAC, en un solo llamado. Encadena
     generar_trama_bits_stuffed() y construir_buffer_dac(). Es el caso de
     uso tipico: todo lo que hace falta para transmitir una trama de
     prueba, junto.
 
     Devuelve (words, fc_ajustada, N_muestras, baseband_complejo,
-    bits_trama, payload) -- bits_trama y payload se devuelven ademas
+    bits_trama, payload). bits_trama y payload se devuelven además
     porque hacen falta despues, del lado del receptor, para contar
     errores de bit contra lo realmente transmitido.
     """
@@ -277,3 +273,56 @@ def generar_senal_ais_prueba(rng, fs, f_lo, offset, sps_tx, l_pulso, bt,
         bits_trama, fs, f_lo, offset, sps_tx, l_pulso, bt,
         amplitud, tx_burst_samples)
     return words, fc_adj, n, bb, bits_trama, payload
+
+# ============================================================
+# Degradacion de la señal: ruido gaussiano a un SNR objetivo
+# ============================================================
+
+def calcular_sigma_ruido(potencia_señal, snr_db):
+    """Calcula la desviacion estandar del ruido gaussiano necesario
+    para que, sumado a una señal de la potencia dada, el resultado
+    tenga el SNR objetivo (en dB).
+    SNR = 10*log10(potencia_señal/potencia_ruido)."""
+    potencia_ruido = potencia_señal / (10**(snr_db / 10.0))
+    return np.sqrt(potencia_ruido)
+
+
+def agregar_ruido(words, snr_db, rng=None):
+    """Agrega ruido gaussiano a las palabras del DAC (14 bits,
+    complemento a dos, empaquetadas en enteros de 32.
+
+    rng: instancia opcional de numpy.random.RandomState (o
+    equivalente), para resultados reproducibles; si no se pasa, usa
+    el generador global de numpy."""
+    v = words.astype(np.int32) & 0x3FFF
+    señal = np.where(v >= 0x2000, v - 0x4000, v).astype(np.float64)
+
+    potencia_señal = np.mean(señal**2)
+    sigma_ruido = calcular_sigma_ruido(potencia_señal, snr_db)
+    generador = rng if rng is not None else np.random
+
+    ruido = generador.normal(0.0, sigma_ruido, size=señal.shape)
+    con_ruido = np.round(señal + ruido)
+    con_ruido = np.clip(con_ruido, -8192, 8191).astype(np.int32)
+    return (con_ruido & 0x3FFF).astype(np.int32)
+
+
+def medir_snr(words_limpia, words_ruidosa):
+    """Mide el SNR real (en dB) entre una señal limpia y su version con
+    ruido agregado, comparando muestra a muestra. No asume nada
+    sobre como se agrego el ruido, sirve como verificacion
+    independiente de agregar_ruido() (o de cualquier otra fuente de
+    degradacion). Devuelve el SNR medido en dB."""
+    v_limpia = words_limpia.astype(np.int32) & 0x3FFF
+    señal_limpia = np.where(v_limpia >= 0x2000, v_limpia - 0x4000, v_limpia).astype(np.float64)
+
+    v_ruidosa = words_ruidosa.astype(np.int32) & 0x3FFF
+    señal_ruidosa = np.where(v_ruidosa >= 0x2000, v_ruidosa - 0x4000, v_ruidosa).astype(np.float64)
+
+    ruido_medido = señal_ruidosa - señal_limpia
+    potencia_señal = np.mean(señal_limpia**2)
+    potencia_ruido = np.mean(ruido_medido**2)
+
+    if potencia_ruido == 0:
+        return np.inf
+    return 10 * np.log10(potencia_señal / potencia_ruido)

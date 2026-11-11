@@ -5,8 +5,9 @@
  *
  * Reference: ADRF6850 Data Sheet, Rev. A (7/2022).
  *
- * The driver talks to the device over the 3-wire SPI port (24-bit writes,
- * command byte 0xD4 / read command 0xD5). The part powers up in I2C mode,
+ * The driver talks to the device over the 4-wire SPI port (CS, CLK, SDI and
+ * SDO): 24-bit writes with command byte 0xD4, and 16-bit register reads with
+ * read command 0xD5 (data out on SDO). The part powers up in I2C mode,
  * so adrf6850_init() first issues the three CS pulses required to latch the
  * SPI protocol (Data Sheet, Figure 65).
  *
@@ -22,98 +23,21 @@ extern "C" {
 #endif
 
 /* =========================================================================
- * 1. STATIC CONFIGURATION - edit these to match the board
+ * 1. CONFIGURATION
+ *
+ * The driver has NO built-in defaults: everything it needs is passed to
+ * adrf6850_init() in an adrf6850_config_t (section 3). In this project
+ * adrf6850_conf.c fills it from adrf6850.conf, which documents each value and
+ * flags the ones the board hardware imposes.
  * ========================================================================= */
 
-/** Reference frequency present at the REFIN pin (Pin 17), in Hz. */
-#define ADRF6850_REFIN_HZ               13500000UL
-
-/** Reference doubler enable (CR10, Bit 5). 0 = off, 1 = on. */
-#define ADRF6850_CFG_REF_DOUBLER_EN     1
-
-/** Reference divide-by-2 enable (CR10, Bit 6). 0 = bypass, 1 = enable. */
-#define ADRF6850_CFG_REF_DIV2_EN        0
-
-/** 5-bit R-divider enable (CR5, Bit 4). 0 = bypass, 1 = enable. */
-#define ADRF6850_CFG_REF_RDIV_EN        0
-
-/** 5-bit R-divider ratio, 1 to 32. Only relevant if RDIV_EN == 1. */
-#define ADRF6850_CFG_REF_RDIV           1
-
-/** Default LO frequency after init, in Hz (100 MHz to 1000 MHz). */
-#define ADRF6850_CFG_LO_HZ              330000000UL
-
-/** Default VGA gain after init, in milli-dB (0 to 60000 => 0 dB to 60 dB). */
-#define ADRF6850_CFG_GAIN_MDB           20000
-
-/** VGA gain slope polarity (CR30, Bit 2). 0 = positive, 1 = negative. */
-#define ADRF6850_CFG_VGA_POLARITY       0
-
-/** Baseband path: 0 = narrow-band (filtered), 1 = wideband (filter bypassed). */
-#define ADRF6850_CFG_BB_WIDEBAND        0
-
-/** Narrow-band filter corner (CR29, Bits[5:4]): 0=50, 1=43, 2=37, 3=30 MHz. */
-#define ADRF6850_CFG_BB_FC              ADRF6850_BB_FC_50MHZ
-
-/** Baseband common-mode source (CR29, Bit 6). 1 = internal, 0 = external VOCM. */
-#define ADRF6850_CFG_VOCM_INTERNAL      1
-
-/** Charge pump current code (CR9, Bits[7:4]). 0x7 => 2.50 mA with RSET = 4.7 k. */
-#define ADRF6850_CFG_CP_CODE            0x7U
-
-/** Autocalibration time in microseconds. 100 us is the recommended value. */
-#define ADRF6850_CFG_AUTOCAL_TIME_US    100U
-
-/** LO monitor outputs (CR27, Bit 2): 0 = powered down, 1 = powered up. */
-#define ADRF6850_CFG_LOMON_EN           0
-
-/** LO monitor power (CR27, Bits[1:0]): 0=-24, 1=-18, 2=-12, 3=-6 dBm. */
-#define ADRF6850_CFG_LOMON_PWR          0
-
-/** MUXOUT control (CR7, Bits[7:4]). 0x0 = tri-state (diagnostic use only). */
-#define ADRF6850_CFG_MUXOUT             0x0U
-
-/** Lock timeout in microseconds when polling LDET. */
-#define ADRF6850_CFG_LOCK_TIMEOUT_US    2000U
-
-/* =========================================================================
- * 2. DERIVED COMPILE-TIME CONSTANTS
- * ========================================================================= */
-
-#if ADRF6850_CFG_REF_RDIV_EN
-#define ADRF6850_R_EFF                  ((uint32_t)ADRF6850_CFG_REF_RDIV)
-#else
-#define ADRF6850_R_EFF                  1UL
-#endif
-
-/** PFD frequency, Equation 1: fPFD = fREFIN * (1 + D) / (R * (1 + T)). */
-#define ADRF6850_PFD_HZ \
-    ((uint32_t)(((uint64_t)ADRF6850_REFIN_HZ * (1UL + ADRF6850_CFG_REF_DOUBLER_EN)) \
-                / (ADRF6850_R_EFF * (1UL + ADRF6850_CFG_REF_DIV2_EN))))
-
-/** Autocalibration timer, Equation 3: BSCDIV = tCAL * fPFD / 24, raw value. */
-#define ADRF6850_BSCDIV_RAW \
-    (((uint64_t)ADRF6850_PFD_HZ * ADRF6850_CFG_AUTOCAL_TIME_US) / 24000000ULL)
-
-/** Autocalibration timer as written to CR25 (8-bit field). */
-#define ADRF6850_BSCDIV                 ((uint8_t)ADRF6850_BSCDIV_RAW)
-
-#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
-_Static_assert(ADRF6850_PFD_HZ >= 10000000UL && ADRF6850_PFD_HZ <= 30000000UL,
-               "PFD frequency out of the 10 MHz to 30 MHz specified range");
-/* Checked on the raw value: casting to uint8_t first would silently wrap. */
-_Static_assert(ADRF6850_BSCDIV_RAW >= 1 && ADRF6850_BSCDIV_RAW <= 255,
-               "BSCDIV out of range: adjust ADRF6850_CFG_AUTOCAL_TIME_US");
-_Static_assert(ADRF6850_CFG_GAIN_MDB >= 0 && ADRF6850_CFG_GAIN_MDB <= 60000,
-               "VGA gain must be within 0 dB to 60 dB");
-#endif
-
+/* Limits of the part (Data Sheet). */
 #define ADRF6850_LO_MIN_HZ              100000000UL
 #define ADRF6850_LO_MAX_HZ              1000000000UL
 #define ADRF6850_FRAC_MOD               (1UL << 25)     /* 25-bit fixed modulus */
 
 /* =========================================================================
- * 3. REGISTER MAP (Data Sheet, Table 8)
+ * 2. REGISTER MAP (Data Sheet, Table 8)
  * ========================================================================= */
 
 #define ADRF6850_REG_CR0                0x00U   /* Fractional word 4 (LSB)   */
@@ -155,7 +79,7 @@ _Static_assert(ADRF6850_CFG_GAIN_MDB >= 0 && ADRF6850_CFG_GAIN_MDB <= 60000,
 #define ADRF6850_SPI_CMD_READ           0xD5U
 
 /* =========================================================================
- * 4. PUBLIC TYPES
+ * 3. PUBLIC TYPES
  * ========================================================================= */
 
 /** Narrow-band low-pass filter corner (CR29, Bits[5:4], Table 7). */
@@ -181,7 +105,8 @@ typedef enum {
     ADRF6850_ERR_RANGE    = -2,   /**< Resulting N-divider out of range    */
     ADRF6850_ERR_LOCK     = -3,   /**< PLL did not assert LDET in time     */
     ADRF6850_ERR_STATE    = -4,   /**< Driver not initialized              */
-    ADRF6850_ERR_HW       = -5    /**< Platform hook reported a failure    */
+    ADRF6850_ERR_HW       = -5,   /**< Platform hook reported a failure    */
+    ADRF6850_ERR_VERIFY   = -6    /**< A register did not read back as written, even after the retries */
 } adrf6850_status_t;
 
 /** Field selectors for adrf6850_update(). OR them together. */
@@ -191,6 +116,39 @@ typedef enum {
 #define ADRF6850_UPD_LOMON      (1U << 3)   /**< lomon_en + lomon_pwr       */
 #define ADRF6850_UPD_CP         (1U << 4)   /**< cp_code                    */
 #define ADRF6850_UPD_ALL        (0x1FU)
+
+/**
+ * Everything adrf6850_init() needs. The driver validates it (adrf6850_init()
+ * returns ADRF6850_ERR_PARAM without touching the part if anything is out of
+ * range): PFD between 10 and 30 MHz, autocalibration timer between 1 and 255,
+ * gain 0..60000 mdB, LO 100..1000 MHz, flags 0/1, cp_code and muxout 0..15,
+ * verify_retries 0..3.
+ */
+typedef struct {
+    /* --- board: fixed by the hardware design --- */
+    uint32_t              refin_hz;         /**< frequency at REFIN (Pin 17), Hz        */
+    uint8_t               ref_doubler_en;   /**< CR10 bit 5: reference doubler          */
+    uint8_t               ref_div2_en;      /**< CR10 bit 6: reference divide-by-2      */
+    uint8_t               ref_rdiv_en;      /**< CR5 bit 4: 5-bit R divider enable      */
+    uint8_t               ref_rdiv;         /**< R divider 1..32 (used if ref_rdiv_en)  */
+    uint8_t               vocm_internal;    /**< CR29 bit 6: 1 = internal common mode   */
+    uint8_t               vga_polarity;     /**< CR30 bit 2: 0 = positive gain slope    */
+    uint8_t               muxout;           /**< CR7[7:4]: MUXOUT control               */
+    uint32_t              autocal_time_us;  /**< autocalibration time (-> CR25)         */
+    uint32_t              lock_timeout_us;  /**< LDET polling timeout (if LDET wired)   */
+    /* --- operating point after init --- */
+    uint32_t              lo_hz;            /**< LO frequency, 100e6 to 1000e6          */
+    int32_t               gain_mdb;         /**< VGA gain in milli-dB, 0..60000         */
+    uint8_t               bb_wideband;      /**< 0 = narrow-band, 1 = wideband          */
+    adrf6850_bb_fc_t      bb_fc;            /**< narrow-band corner frequency           */
+    uint8_t               cp_code;          /**< charge pump code 0x0..0xF              */
+    uint8_t               lomon_en;         /**< LO monitor power-up                    */
+    adrf6850_lomon_pwr_t  lomon_pwr;        /**< LO monitor output level                */
+    /* --- link --- */
+    uint8_t               verify_retries;   /**< 0 = write only (SDO not needed). 1..3 = after every register
+                                                 write, read it back; if it differs, write it again and re-read,
+                                                 at most this many times (then ADRF6850_ERR_VERIFY)          */
+} adrf6850_config_t;
 
 /** Runtime parameter set. Only the fields flagged in @c mask are applied. */
 typedef struct {
@@ -204,6 +162,16 @@ typedef struct {
     uint8_t               cp_code;      /**< Charge pump code 0x0..0xF      */
     uint8_t               fast_hop;     /**< 1 = skip autocal if |df|<=100k */
 } adrf6850_params_t;
+
+/** Link health, counted over the verified writes since the last adrf6850_clear_verify_stats(). */
+typedef struct {
+    uint32_t writes;       /**< register writes that were verified                          */
+    uint32_t retries;      /**< extra attempts needed: each one is a link error that was caught */
+    uint32_t failures;     /**< writes that still did not verify after every retry          */
+    uint8_t  fail_addr;    /**< last failure: register ...                                  */
+    uint8_t  fail_wrote;   /**< ... value written ...                                       */
+    uint8_t  fail_read;    /**< ... value read back                                         */
+} adrf6850_verify_stats_t;
 
 /** Snapshot of the current device state maintained by the driver. */
 typedef struct {
@@ -222,14 +190,19 @@ typedef struct {
 } adrf6850_state_t;
 
 /* =========================================================================
- * 5. PLATFORM HOOKS - implement these for your board
+ * 4. PLATFORM HOOKS - implement these for your board
  * ========================================================================= */
 
 /** Send @p len bytes MSB first on the SPI bus (CS handled by spidev). */
 void adrf6850_hw_spi_write(const uint8_t *buf, uint32_t len);
 
-/** Receive @p len bytes MSB first on the SPI bus (CS handled by spidev). */
-void adrf6850_hw_spi_read(uint8_t *buf, uint32_t len);
+/**
+ * Full-duplex SPI transfer: shift out @p tx[0..len) and capture @p rx[0..len)
+ * in the same transfer, with CS low for the whole transfer (one spidev message
+ * does exactly that). A register read needs it: the data comes out on SDO in
+ * the same frame as the 0xD5 command (Data Sheet, Figure 67).
+ */
+void adrf6850_hw_spi_xfer(const uint8_t *tx, uint8_t *rx, uint32_t len);
 
 /**
  * Read the LDET pin (Pin 40).
@@ -245,10 +218,14 @@ int adrf6850_hw_ldet_read(void);
 int adrf6850_hw_vgain_set_mv(uint16_t mv);
 
 /* =========================================================================
- * 6. PUBLIC API
+ * 5. PUBLIC API
  * ========================================================================= */
 
-adrf6850_status_t adrf6850_init(void);
+/** Check a configuration exactly as adrf6850_init() does, without touching the part. */
+adrf6850_status_t adrf6850_validate_config(const adrf6850_config_t *cfg);
+
+/** Full power-up with the given configuration (validated; see adrf6850_config_t). */
+adrf6850_status_t adrf6850_init(const adrf6850_config_t *cfg);
 adrf6850_status_t adrf6850_update(const adrf6850_params_t *p);
 
 /* Convenience wrappers built on adrf6850_update(). */
@@ -257,10 +234,17 @@ adrf6850_status_t adrf6850_set_gain_mdb(int32_t gain_mdb);
 adrf6850_status_t adrf6850_set_baseband(uint8_t wideband, adrf6850_bb_fc_t fc);
 adrf6850_status_t adrf6850_set_lo_monitor(uint8_t enable, adrf6850_lomon_pwr_t pwr);
 
-/* Low-level helpers for debug. */
+/* Low-level helpers for debug. adrf6850_write_reg() is the RAW write: it never verifies. init() and update()
+ * use the verified write internally. */
 void adrf6850_write_reg(uint8_t addr, uint8_t data);
+/* Register readback over SDO (CR0..CR33). Needs the 4-wire SPI with SDO wired.
+ * While the part is still in I2C mode, the two frames count as CS pulses of the
+ * SPI selection and the returned value is meaningless. */
 uint8_t adrf6850_read_reg(uint8_t addr);
 const adrf6850_state_t *adrf6850_get_state(void);
+/* Write-verify statistics (see adrf6850_config_t.verify_retries). */
+void adrf6850_get_verify_stats(adrf6850_verify_stats_t *s);
+void adrf6850_clear_verify_stats(void);
 adrf6850_status_t adrf6850_wait_lock(uint32_t timeout_us);
 
 #ifdef __cplusplus
