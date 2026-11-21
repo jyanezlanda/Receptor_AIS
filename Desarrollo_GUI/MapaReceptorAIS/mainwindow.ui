@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1360</width>
+    <height>820</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Receptor AIS — Red Pitaya</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="centralLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QTabWidget" name="tabs">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <property name="documentMode">
+       <bool>true</bool>
+      </property>
+      <widget class="MapPage" name="mapPage">
+       <attribute name="title">
+        <string>Mapa</string>
+       </attribute>
+      </widget>
+      <widget class="ConnectionPage" name="connectionPage">
+       <attribute name="title">
+        <string>Conexión</string>
+       </attribute>
+      </widget>
+      <widget class="SshPage" name="sshPage">
+       <attribute name="title">
+        <string>SSH</string>
+       </attribute>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1360</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuArchivo">
+    <property name="title">
+     <string>&amp;Archivo</string>
+    </property>
+    <addaction name="actionSalir"/>
+   </widget>
+   <widget class="QMenu" name="menuVer">
+    <property name="title">
+     <string>&amp;Ver</string>
+    </property>
+    <addaction name="actionVerMapa"/>
+    <addaction name="actionVerConexion"/>
+    <addaction name="actionVerSsh"/>
+   </widget>
+   <widget class="QMenu" name="menuAyuda">
+    <property name="title">
+     <string>A&amp;yuda</string>
+    </property>
+    <addaction name="actionAcercaDe"/>
+    <addaction name="actionAcercaDeQt"/>
+   </widget>
+   <addaction name="menuArchivo"/>
+   <addaction name="menuVer"/>
+   <addaction name="menuAyuda"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionSalir">
+   <property name="text">
+    <string>&amp;Salir</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionVerMapa">
+   <property name="text">
+    <string>&amp;Mapa</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+1</string>
+   </property>
+  </action>
+  <action name="actionVerConexion">
+   <property name="text">
+    <string>&amp;Conexión</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+2</string>
+   </property>
+  </action>
+  <action name="actionVerSsh">
+   <property name="text">
+    <string>&amp;SSH</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+3</string>
+   </property>
+  </action>
+  <action name="actionAcercaDe">
+   <property name="text">
+    <string>&amp;Acerca de</string>
+   </property>
+  </action>
+  <action name="actionAcercaDeQt">
+   <property name="text">
+    <string>Acerca de &amp;Qt</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MapPage</class>
+   <extends>QWidget</extends>
+   <header>mappage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ConnectionPage</class>
+   <extends>QWidget</extends>
+   <header>connectionpage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SshPage</class>
+   <extends>QWidget</extends>
+   <header>sshpage.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

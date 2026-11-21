@@ -1,0 +1,4 @@
+# Archivos que se copian a la Red Pitaya (Linux): siempre con fin de linea LF,
+# aunque Git en Windows convierta el resto a CRLF.
+*.sh    text eol=lf
+*.nmea  text eol=lf

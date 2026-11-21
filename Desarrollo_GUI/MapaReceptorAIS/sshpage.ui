@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SshPage</class>
+ <widget class="QWidget" name="SshPage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1300</width>
+    <height>760</height>
+   </rect>
+  </property>
+  <layout class="QHBoxLayout" name="mainLayout">
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="childrenCollapsible">
+      <bool>false</bool>
+     </property>
+     <widget class="QScrollArea" name="leftScroll">
+      <property name="minimumSize">
+       <size>
+        <width>480</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="widgetResizable">
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="scrollContents">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>540</width>
+         <height>900</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="scrollLayout">
+        <item>
+         <widget class="QWidget" name="configArea" native="true">
+          <layout class="QVBoxLayout" name="configLayout">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QGroupBox" name="grpSshConexion">
+             <property name="title">
+              <string>Conexión SSH (por Ethernet)</string>
+             </property>
+             <layout class="QFormLayout" name="sshForm">
+              <item row="0" column="0">
+               <widget class="QLabel" name="lblHost">
+                <property name="text">
+                 <string>IP de la Red Pitaya:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="txtHost">
+                <property name="text">
+                 <string>192.168.1.100</string>
+                </property>
+                <property name="placeholderText">
+                 <string>IP o nombre (p. ej. rp-f0xxxx.local)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="lblPuerto">
+                <property name="text">
+                 <string>Puerto:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QSpinBox" name="spnPuerto">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>65535</number>
+                </property>
+                <property name="value">
+                 <number>22</number>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>90</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="buttonSymbols">
+                 <enum>QAbstractSpinBox::NoButtons</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="lblUsuario">
+                <property name="text">
+                 <string>Usuario:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLineEdit" name="txtUsuario">
+                <property name="text">
+                 <string>root</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="lblAuth">
+                <property name="text">
+                 <string>Autenticación:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QComboBox" name="cmbAuth">
+                <item>
+                 <property name="text">
+                  <string>Contraseña</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Clave privada</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="lblPassword">
+                <property name="text">
+                 <string>Contraseña:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QLineEdit" name="txtPassword">
+                <property name="echoMode">
+                 <enum>QLineEdit::Password</enum>
+                </property>
+                <property name="placeholderText">
+                 <string>Contraseña del usuario</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="lblClave">
+                <property name="text">
+                 <string>Clave privada:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <layout class="QHBoxLayout" name="claveLayout" stretch="1,0">
+                <item>
+                 <widget class="QLineEdit" name="txtClave">
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="placeholderText">
+                   <string>Archivo de clave (p. ej. id_ed25519)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btnExaminar">
+                  <property name="text">
+                   <string>Examinar…</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="6" column="0">
+               <widget class="QLabel" name="lblTimeout">
+                <property name="text">
+                 <string>Tiempo de espera:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="1">
+               <widget class="QSpinBox" name="spnTimeout">
+                <property name="minimum">
+                 <number>2</number>
+                </property>
+                <property name="maximum">
+                 <number>120</number>
+                </property>
+                <property name="value">
+                 <number>10</number>
+                </property>
+                <property name="suffix">
+                 <string> s</string>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="1">
+               <widget class="QCheckBox" name="chkAceptarHost">
+                <property name="text">
+                 <string>Aceptar automáticamente la clave de un host nuevo</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="1">
+               <widget class="QLabel" name="lblSshAyuda">
+                <property name="text">
+                 <string>Usa el cliente OpenSSH de Windows a través del cable Ethernet. La contraseña no se guarda en disco.</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="grpSshEstado">
+          <property name="title">
+           <string>Estado</string>
+          </property>
+          <layout class="QVBoxLayout" name="sshEstadoLayout">
+           <item>
+            <layout class="QHBoxLayout" name="sshEstadoTituloLayout" stretch="0,1">
+             <item>
+              <widget class="QLabel" name="lblLed">
+               <property name="minimumSize">
+                <size>
+                 <width>16</width>
+                 <height>16</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16</width>
+                 <height>16</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="lblEstado">
+               <property name="font">
+                <font>
+                 <pointsize>11</pointsize>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Desconectado</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblEstadoDetalle">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::TextSelectableByMouse</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="sshBotonesLayout">
+             <item>
+              <widget class="QPushButton" name="btnOlvidarHost">
+               <property name="text">
+                <string>Olvidar clave del host</string>
+               </property>
+               <property name="toolTip">
+                <string>Borra la clave guardada de este host (útil si se reinstaló la Red Pitaya)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="sshBotonesSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnConectar">
+               <property name="text">
+                <string>Conectar</string>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>130</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="default">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="grpComandos">
+          <property name="title">
+           <string>Comandos rápidos</string>
+          </property>
+          <layout class="QGridLayout" name="comandosLayout">
+           <item row="0" column="0">
+            <widget class="QPushButton" name="btnIniciar">
+             <property name="text">
+              <string>Iniciar receptor</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="txtCmdIniciar">
+             <property name="text">
+              <string>cd /media/mmcblk0p1/apps &amp;&amp; ./start.sh &amp;&amp; (nohup ./adrf_server -c adrf6850.conf &gt; /tmp/adrf.log 2&gt;&amp;1 &amp;) &amp;&amp; (nohup ./adc_server &gt; /tmp/adc.log 2&gt;&amp;1 &amp;) &amp;&amp; echo "Servidores iniciados (adc_server: 1003, adrf_server: 1005)"</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QPushButton" name="btnDetener">
+             <property name="text">
+              <string>Detener receptor</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="txtCmdDetener">
+             <property name="text">
+              <string>killall adc_server adrf_server 2&gt;/dev/null; echo "Servidores detenidos"</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QPushButton" name="btnEstadoRp">
+             <property name="text">
+              <string>Estado</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="txtCmdEstado">
+             <property name="text">
+              <string>uptime; free -m; for p in adc_server adrf_server ais_sim.sh; do pgrep -f $p &gt; /dev/null &amp;&amp; echo "$p: en ejecución" || echo "$p: detenido"; done</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QPushButton" name="btnLog">
+             <property name="text">
+              <string>Ver registro</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="txtCmdLog">
+             <property name="text">
+              <string>tail -n 15 /tmp/adc.log /tmp/adrf.log /tmp/ais_sim.log 2&gt;/dev/null</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QPushButton" name="btnSimIniciar">
+             <property name="text">
+              <string>Iniciar simulación AIS</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="txtCmdSimIniciar">
+             <property name="text">
+              <string>(nohup sh /media/mmcblk0p1/apps/ais_sim.sh &gt; /tmp/ais_sim.log 2&gt;&amp;1 &amp;) &amp;&amp; sleep 1 &amp;&amp; cat /tmp/ais_sim.log</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QPushButton" name="btnSimDetener">
+             <property name="text">
+              <string>Detener simulación AIS</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QLineEdit" name="txtCmdSimDetener">
+             <property name="text">
+              <string>pkill -f ais_sim.sh; pkill -f "nc -l -p 1004"; echo "Simulación detenida"</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0">
+            <widget class="QPushButton" name="btnReiniciar">
+             <property name="text">
+              <string>Reiniciar Red Pitaya</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1">
+            <widget class="QLineEdit" name="txtCmdReiniciar">
+             <property name="text">
+              <string>reboot</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="0">
+            <widget class="QPushButton" name="btnApagar">
+             <property name="text">
+              <string>Apagar Red Pitaya</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="1">
+            <widget class="QLineEdit" name="txtCmdApagar">
+             <property name="text">
+              <string>poweroff</string>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="0" colspan="2">
+            <widget class="QLabel" name="lblComandosAyuda">
+             <property name="text">
+              <string>Los comandos se pueden editar y se guardan al conectar. Con la simulación activa, conectá la pestaña Conexión a 192.168.1.100:1004 (TCP) con formato NMEA.</string>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="leftSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="grpConsola">
+      <property name="title">
+       <string>Consola</string>
+      </property>
+      <layout class="QVBoxLayout" name="consolaLayout" stretch="1,0">
+       <item>
+        <widget class="QPlainTextEdit" name="txtConsola">
+         <property name="lineWrapMode">
+          <enum>QPlainTextEdit::NoWrap</enum>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+         <property name="maximumBlockCount">
+          <number>5000</number>
+         </property>
+         <property name="placeholderText">
+          <string>Conectate para ver aquí la salida de la Red Pitaya.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="comandoLayout" stretch="1,0,0">
+         <item>
+          <widget class="QLineEdit" name="txtComando">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="placeholderText">
+            <string>Escribí un comando y presioná Enter (↑/↓: historial)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnEnviar">
+           <property name="text">
+            <string>Enviar</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnLimpiarConsola">
+           <property name="text">
+            <string>Limpiar</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

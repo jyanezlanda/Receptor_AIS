@@ -1,0 +1,976 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ConnectionPage</class>
+ <widget class="QWidget" name="ConnectionPage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1300</width>
+    <height>760</height>
+   </rect>
+  </property>
+  <layout class="QHBoxLayout" name="mainLayout">
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="childrenCollapsible">
+      <bool>false</bool>
+     </property>
+     <widget class="QScrollArea" name="configScroll">
+      <property name="minimumSize">
+       <size>
+        <width>460</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="widgetResizable">
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="configScrollContents">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>520</width>
+         <height>900</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="scrollLayout">
+        <item>
+         <widget class="QWidget" name="configArea" native="true">
+          <layout class="QVBoxLayout" name="configLayout">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QGroupBox" name="grpInterfaz">
+             <property name="title">
+              <string>Interfaz con la Red Pitaya</string>
+             </property>
+             <layout class="QVBoxLayout" name="interfazLayout">
+              <item>
+               <layout class="QHBoxLayout" name="radiosLayout">
+                <item>
+                 <widget class="QRadioButton" name="radioSerie">
+                  <property name="toolTip">
+                   <string>Puerto serie virtual (USB) o UART de la Red Pitaya. Útil para depuración o cuando no hay red disponible.</string>
+                  </property>
+                  <property name="text">
+                   <string>Serie (USB / UART)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="radioEthernet">
+                  <property name="toolTip">
+                   <string>Conexión por cable de red. La Red Pitaya corre el servidor TCP y la PC se conecta como cliente.</string>
+                  </property>
+                  <property name="text">
+                   <string>Ethernet</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="radioWifi">
+                  <property name="toolTip">
+                   <string>Conexión inalámbrica mediante un adaptador WiFi USB en la Red Pitaya, en modo punto de acceso o unida a una red existente.</string>
+                  </property>
+                  <property name="text">
+                   <string>WiFi</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="radiosSpacer">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QLabel" name="lblInterfazDesc">
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="grpSerie">
+             <property name="title">
+              <string>Puerto serie</string>
+             </property>
+             <layout class="QFormLayout" name="serieForm">
+              <item row="0" column="0">
+               <widget class="QLabel" name="lblPuerto">
+                <property name="text">
+                 <string>Puerto:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <layout class="QHBoxLayout" name="puertoLayout" stretch="1,0">
+                <item>
+                 <widget class="QComboBox" name="cmbPuerto">
+                  <property name="editable">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btnActualizarPuertos">
+                  <property name="text">
+                   <string>Actualizar</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLabel" name="lblPuertoInfo">
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="lblBaudios">
+                <property name="text">
+                 <string>Velocidad (baudios):</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QComboBox" name="cmbBaudios">
+                <property name="editable">
+                 <bool>true</bool>
+                </property>
+                <property name="currentIndex">
+                 <number>4</number>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>9600</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>19200</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>38400</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>57600</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>115200</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>230400</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>460800</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>921600</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="lblBitsDatos">
+                <property name="text">
+                 <string>Bits de datos:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QComboBox" name="cmbBitsDatos">
+                <property name="currentIndex">
+                 <number>3</number>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>5</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>6</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>7</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>8</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="lblParidad">
+                <property name="text">
+                 <string>Paridad:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QComboBox" name="cmbParidad">
+                <item>
+                 <property name="text">
+                  <string>Ninguna</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Par</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Impar</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Marca</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Espacio</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="lblBitsParada">
+                <property name="text">
+                 <string>Bits de parada:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QComboBox" name="cmbBitsParada">
+                <item>
+                 <property name="text">
+                  <string>1</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>1.5</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>2</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="6" column="0">
+               <widget class="QLabel" name="lblFlujo">
+                <property name="text">
+                 <string>Control de flujo:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="1">
+               <widget class="QComboBox" name="cmbFlujo">
+                <item>
+                 <property name="text">
+                  <string>Ninguno</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Hardware (RTS/CTS)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Software (XON/XOFF)</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="grpEthernet">
+             <property name="title">
+              <string>Servidor Ethernet</string>
+             </property>
+             <layout class="QFormLayout" name="ethForm">
+              <item row="0" column="0">
+               <widget class="QLabel" name="lblEthRol">
+                <property name="text">
+                 <string>Rol:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QComboBox" name="cmbEthRol">
+                <item>
+                 <property name="text">
+                  <string>PC cliente → Red Pitaya servidor</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>PC servidor ← Red Pitaya cliente</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="lblEthProtocolo">
+                <property name="text">
+                 <string>Protocolo:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QComboBox" name="cmbEthProtocolo">
+                <item>
+                 <property name="text">
+                  <string>TCP</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>UDP</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="lblEthHost">
+                <property name="text">
+                 <string>IP de la Red Pitaya:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLineEdit" name="txtEthHost">
+                <property name="text">
+                 <string>192.168.1.100</string>
+                </property>
+                <property name="placeholderText">
+                 <string>IP o nombre (p. ej. rp-f0xxxx.local)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="lblEthPuerto">
+                <property name="text">
+                 <string>Puerto remoto:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QSpinBox" name="spnEthPuerto">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>65535</number>
+                </property>
+                <property name="value">
+                 <number>1004</number>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>90</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="buttonSymbols">
+                 <enum>QAbstractSpinBox::NoButtons</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="lblEthPuertoLocal">
+                <property name="text">
+                 <string>Puerto local:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QSpinBox" name="spnEthPuertoLocal">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>65535</number>
+                </property>
+                <property name="value">
+                 <number>1004</number>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>90</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="buttonSymbols">
+                 <enum>QAbstractSpinBox::NoButtons</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="lblEthAdaptador">
+                <property name="text">
+                 <string>Adaptador de la PC:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QComboBox" name="cmbEthAdaptador"/>
+              </item>
+              <item row="6" column="1">
+               <widget class="QLabel" name="lblEthAyuda">
+                <property name="text">
+                 <string>El servidor de la Red Pitaya publica los bits demodulados en el puerto TCP 1004 y recibe comandos en el 1003.</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="grpWifi">
+             <property name="title">
+              <string>WiFi</string>
+             </property>
+             <layout class="QFormLayout" name="wifiForm">
+              <item row="0" column="0">
+               <widget class="QLabel" name="lblWifiModo">
+                <property name="text">
+                 <string>Modo:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QComboBox" name="cmbWifiModo">
+                <item>
+                 <property name="text">
+                  <string>Red Pitaya como punto de acceso (AP)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Red Pitaya y PC en la misma red WiFi</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="lblWifiSsid">
+                <property name="text">
+                 <string>Red:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <layout class="QHBoxLayout" name="ssidLayout" stretch="1,0">
+                <item>
+                 <widget class="QLineEdit" name="txtWifiSsid">
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="placeholderText">
+                   <string>Nombre de la red (SSID)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btnRedesWifi">
+                  <property name="text">
+                   <string>Redes WiFi…</string>
+                  </property>
+                  <property name="toolTip">
+                   <string>Abre la configuración WiFi del sistema para asociarse a la red</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="lblWifiAdaptador">
+                <property name="text">
+                 <string>Adaptador WiFi de la PC:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <layout class="QHBoxLayout" name="wifiAdaptadorLayout" stretch="1,0">
+                <item>
+                 <widget class="QComboBox" name="cmbWifiAdaptador"/>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btnActualizarAdaptadores">
+                  <property name="text">
+                   <string>Actualizar</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="3" column="1">
+               <widget class="QLabel" name="lblWifiAviso">
+                <property name="text">
+                 <string>No se detectó ningún adaptador WiFi activo.</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+                <property name="styleSheet">
+                 <string>color: #c0392b;</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="lblWifiHost">
+                <property name="text">
+                 <string>IP de la Red Pitaya:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QLineEdit" name="txtWifiHost">
+                <property name="text">
+                 <string>192.168.42.1</string>
+                </property>
+                <property name="placeholderText">
+                 <string>IP o nombre de la Red Pitaya</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="lblWifiProtocolo">
+                <property name="text">
+                 <string>Protocolo:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QComboBox" name="cmbWifiProtocolo">
+                <item>
+                 <property name="text">
+                  <string>TCP</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>UDP</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="6" column="0">
+               <widget class="QLabel" name="lblWifiPuerto">
+                <property name="text">
+                 <string>Puerto remoto:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="1">
+               <widget class="QSpinBox" name="spnWifiPuerto">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>65535</number>
+                </property>
+                <property name="value">
+                 <number>1004</number>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>90</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="buttonSymbols">
+                 <enum>QAbstractSpinBox::NoButtons</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="0">
+               <widget class="QLabel" name="lblWifiPuertoLocal">
+                <property name="text">
+                 <string>Puerto local:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="1">
+               <widget class="QSpinBox" name="spnWifiPuertoLocal">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>65535</number>
+                </property>
+                <property name="value">
+                 <number>1004</number>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>90</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="buttonSymbols">
+                 <enum>QAbstractSpinBox::NoButtons</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="1">
+               <widget class="QLabel" name="lblWifiAyuda">
+                <property name="text">
+                 <string>La PC tiene que estar asociada a la red WiFi desde el sistema operativo antes de conectar. En modo AP, la dirección por defecto es 192.168.42.1 (verificar en la configuración de la Red Pitaya).</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="grpOpciones">
+             <property name="title">
+              <string>Opciones</string>
+             </property>
+             <layout class="QFormLayout" name="opcionesForm">
+              <item row="0" column="0">
+               <widget class="QLabel" name="lblFormato">
+                <property name="text">
+                 <string>Formato de datos:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QComboBox" name="cmbFormato">
+                <item>
+                 <property name="text">
+                  <string>Bits demodulados (stream binario)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Sentencias NMEA 0183 (!AIVDM)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Crudo (solo monitor)</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="lblTimeout">
+                <property name="text">
+                 <string>Tiempo de espera:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QSpinBox" name="spnTimeout">
+                <property name="minimum">
+                 <number>500</number>
+                </property>
+                <property name="maximum">
+                 <number>60000</number>
+                </property>
+                <property name="value">
+                 <number>5000</number>
+                </property>
+                <property name="suffix">
+                 <string> ms</string>
+                </property>
+                <property name="singleStep">
+                 <number>500</number>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QCheckBox" name="chkReconectar">
+                <property name="text">
+                 <string>Reconectar automáticamente si se pierde el enlace</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="grpEstado">
+          <property name="title">
+           <string>Estado</string>
+          </property>
+          <layout class="QVBoxLayout" name="estadoLayout">
+           <item>
+            <layout class="QHBoxLayout" name="estadoTituloLayout" stretch="0,1">
+             <item>
+              <widget class="QLabel" name="lblLed">
+               <property name="minimumSize">
+                <size>
+                 <width>16</width>
+                 <height>16</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16</width>
+                 <height>16</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="lblEstado">
+               <property name="font">
+                <font>
+                 <pointsize>11</pointsize>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Desconectado</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblEstadoDetalle">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+             <property name="textInteractionFlags">
+              <set>Qt::TextSelectableByMouse</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="botonesLayout">
+             <item>
+              <widget class="QPushButton" name="btnProbar">
+               <property name="text">
+                <string>Probar conexión</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="botonesSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnConectar">
+               <property name="text">
+                <string>Conectar</string>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>130</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="default">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="configSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="grpMonitor">
+      <property name="title">
+       <string>Monitor de datos recibidos</string>
+      </property>
+      <layout class="QVBoxLayout" name="monitorLayout" stretch="0,1,0">
+       <item>
+        <layout class="QHBoxLayout" name="monitorToolbar">
+         <item>
+          <widget class="QLabel" name="lblMostrar">
+           <property name="text">
+            <string>Mostrar:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cmbMonitorModo">
+           <item>
+            <property name="text">
+             <string>Hexadecimal</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ASCII</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="chkMarcasTiempo">
+           <property name="text">
+            <string>Marcas de tiempo</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="chkPausar">
+           <property name="text">
+            <string>Pausar</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="monitorSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnLimpiarMonitor">
+           <property name="text">
+            <string>Limpiar</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QPlainTextEdit" name="txtMonitor">
+         <property name="lineWrapMode">
+          <enum>QPlainTextEdit::NoWrap</enum>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+         <property name="maximumBlockCount">
+          <number>3000</number>
+         </property>
+         <property name="placeholderText">
+          <string>Aquí se muestran los bytes que llegan desde la Red Pitaya.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lblRxStats">
+         <property name="text">
+          <string>Recibidos: 0 bytes  ·  0 B/s</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
