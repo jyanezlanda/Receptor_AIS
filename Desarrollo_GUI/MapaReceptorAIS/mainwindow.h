@@ -3,6 +3,7 @@
 
 #include "connectionmanager.h"
 
+#include <QElapsedTimer>
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
@@ -36,6 +37,7 @@ private:
     void onConnectionStateChanged(ConnectionManager::State state, const QString &message);
     void onRawDataReceived(const QByteArray &data);
     void updateDecoderStatus();
+    void onReceiverStatus(quint32 level, bool squelchOpen, quint32 fifoWords);
 
     Ui::MainWindow *ui;
 
@@ -48,6 +50,8 @@ private:
     QLabel *m_statusVessels = nullptr;
     QLabel *m_statusAis = nullptr;
     QLabel *m_statusRx = nullptr;
+    QLabel *m_statusReceiver = nullptr;
+    QElapsedTimer m_receiverStatusTimer;
 };
 
 #endif // MAINWINDOW_H

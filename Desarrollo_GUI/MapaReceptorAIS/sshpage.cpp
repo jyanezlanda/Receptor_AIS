@@ -290,17 +290,18 @@ void SshPage::loadSettings()
     ui->spnTimeout->setValue(s.value(QStringLiteral("timeoutSec"), ui->spnTimeout->value()).toInt());
     ui->chkAceptarHost->setChecked(
         s.value(QStringLiteral("acceptNewHostKey"), ui->chkAceptarHost->isChecked()).toBool());
-    // Grupo "comandos_v3": los comandos guardados de la version vieja (loopback_server, en
-    // "cmd/") se ignoran para que se usen los nuevos valores por defecto del .ui.
+    // Grupo "comandos_v4": los comandos guardados de las versiones viejas ("cmd/" y "comandos_v3/")
+    // se ignoran para que se usen los nuevos valores por defecto del .ui.
     s.remove(QStringLiteral("cmd"));
-    loadText(ui->txtCmdIniciar, QStringLiteral("comandos_v3/start"));
-    loadText(ui->txtCmdDetener, QStringLiteral("comandos_v3/stop"));
-    loadText(ui->txtCmdEstado, QStringLiteral("comandos_v3/status"));
-    loadText(ui->txtCmdLog, QStringLiteral("comandos_v3/log"));
-    loadText(ui->txtCmdSimIniciar, QStringLiteral("comandos_v3/simStart"));
-    loadText(ui->txtCmdSimDetener, QStringLiteral("comandos_v3/simStop"));
-    loadText(ui->txtCmdReiniciar, QStringLiteral("comandos_v3/reboot"));
-    loadText(ui->txtCmdApagar, QStringLiteral("comandos_v3/poweroff"));
+    s.remove(QStringLiteral("comandos_v3"));
+    loadText(ui->txtCmdIniciar, QStringLiteral("comandos_v4/start"));
+    loadText(ui->txtCmdDetener, QStringLiteral("comandos_v4/stop"));
+    loadText(ui->txtCmdEstado, QStringLiteral("comandos_v4/status"));
+    loadText(ui->txtCmdLog, QStringLiteral("comandos_v4/log"));
+    loadText(ui->txtCmdSimIniciar, QStringLiteral("comandos_v4/simStart"));
+    loadText(ui->txtCmdSimDetener, QStringLiteral("comandos_v4/simStop"));
+    loadText(ui->txtCmdReiniciar, QStringLiteral("comandos_v4/reboot"));
+    loadText(ui->txtCmdApagar, QStringLiteral("comandos_v4/poweroff"));
     s.endGroup();
 }
 
@@ -315,13 +316,13 @@ void SshPage::saveSettings() const
     s.setValue(QStringLiteral("keyFile"), ui->txtClave->text());
     s.setValue(QStringLiteral("timeoutSec"), ui->spnTimeout->value());
     s.setValue(QStringLiteral("acceptNewHostKey"), ui->chkAceptarHost->isChecked());
-    s.setValue(QStringLiteral("comandos_v3/start"), ui->txtCmdIniciar->text());
-    s.setValue(QStringLiteral("comandos_v3/stop"), ui->txtCmdDetener->text());
-    s.setValue(QStringLiteral("comandos_v3/status"), ui->txtCmdEstado->text());
-    s.setValue(QStringLiteral("comandos_v3/log"), ui->txtCmdLog->text());
-    s.setValue(QStringLiteral("comandos_v3/simStart"), ui->txtCmdSimIniciar->text());
-    s.setValue(QStringLiteral("comandos_v3/simStop"), ui->txtCmdSimDetener->text());
-    s.setValue(QStringLiteral("comandos_v3/reboot"), ui->txtCmdReiniciar->text());
-    s.setValue(QStringLiteral("comandos_v3/poweroff"), ui->txtCmdApagar->text());
+    s.setValue(QStringLiteral("comandos_v4/start"), ui->txtCmdIniciar->text());
+    s.setValue(QStringLiteral("comandos_v4/stop"), ui->txtCmdDetener->text());
+    s.setValue(QStringLiteral("comandos_v4/status"), ui->txtCmdEstado->text());
+    s.setValue(QStringLiteral("comandos_v4/log"), ui->txtCmdLog->text());
+    s.setValue(QStringLiteral("comandos_v4/simStart"), ui->txtCmdSimIniciar->text());
+    s.setValue(QStringLiteral("comandos_v4/simStop"), ui->txtCmdSimDetener->text());
+    s.setValue(QStringLiteral("comandos_v4/reboot"), ui->txtCmdReiniciar->text());
+    s.setValue(QStringLiteral("comandos_v4/poweroff"), ui->txtCmdApagar->text());
     s.endGroup();
 }

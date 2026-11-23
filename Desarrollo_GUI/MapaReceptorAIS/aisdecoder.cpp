@@ -103,12 +103,14 @@ void setDimensions(Vessel &v, const BitReader &b, int start)
 AisDecoder::AisDecoder(QObject *parent)
     : QObject(parent)
 {
+    ais_rx_iniciar(&m_rx);
 }
 
 void AisDecoder::reset()
 {
     m_lineBuffer.clear();
     m_fragments.clear();
+    ais_rx_iniciar(&m_rx);
     m_stats = Stats();
     emit statsChanged();
 }
@@ -223,6 +225,25 @@ bool AisDecoder::decodeSentence(const QByteArray &sentenceIn)
     }
     emit statsChanged();
     return true;
+}
+
+void AisDecoder::feedWords(const QVector<quint32> &words)
+{
+    ais_rx_palabras(&m_rx, words.constData(), size_t(words.size()), &AisDecoder::onFrame, this);
+    // Los contadores de tramas son los de la polaridad que tiene la señal: la otra solo arma candidatas de basura con banderas al reves.
+    const int p = m_rx.pol[1].tramas > m_rx.pol[0].tramas ? 1 : 0;
+    m_stats.rxBits = m_rx.bits;
+    m_stats.rxFrames = m_rx.tramas;
+    m_stats.rxCandidates = m_rx.pol[p].candidatas;
+    m_stats.rxBadFcs = m_rx.pol[p].fcs_malo;
+    m_stats.rxDiscarded = m_rx.pol[p].descartadas;
+    m_stats.rxAborted = m_rx.pol[p].abortadas;
+    emit statsChanged();
+}
+
+void AisDecoder::onFrame(const ais_frame_t *frame, void *user)
+{
+    static_cast<AisDecoder *>(user)->handleMessage(QByteArray(frame->payload), frame->relleno);
 }
 
 void AisDecoder::handleMessage(const QByteArray &payload, int fillBits)

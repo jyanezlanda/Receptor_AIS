@@ -34,7 +34,7 @@ const ConnectionConfig::Protocol kProtocol[] = { // cmbEthProtocolo / cmbWifiPro
 const ConnectionConfig::Role kRole[] = {         // cmbEthRol
     ConnectionConfig::Role::Client, ConnectionConfig::Role::Server};
 const ConnectionConfig::DataFormat kFormat[] = { // cmbFormato
-    ConnectionConfig::DataFormat::DemodBits, ConnectionConfig::DataFormat::Nmea,
+    ConnectionConfig::DataFormat::Receiver, ConnectionConfig::DataFormat::Nmea,
     ConnectionConfig::DataFormat::Raw};
 
 template<typename T, size_t N>
@@ -111,6 +111,7 @@ ConnectionPage::ConnectionPage(QWidget *parent)
             &ConnectionPage::updateSerialPortInfo);
 
     // Ethernet / WiFi
+    connect(ui->cmbFormato, &QComboBox::currentIndexChanged, this, &ConnectionPage::onFormatChanged);
     connect(ui->cmbEthRol, &QComboBox::currentIndexChanged, this,
             &ConnectionPage::updateNetworkFieldStates);
     connect(ui->cmbEthProtocolo, &QComboBox::currentIndexChanged, this,
@@ -151,7 +152,7 @@ ConnectionPage::ConnectionPage(QWidget *parent)
     refreshSerialPorts();
     refreshAdapters();
     loadSettings();
-    updateNetworkFieldStates();
+    onFormatChanged();
     onStateChanged(ConnectionManager::State::Disconnected, QString());
 }
 
@@ -222,21 +223,39 @@ void ConnectionPage::refreshAdapters()
     ui->lblWifiAviso->setVisible(wifi == 0);
 }
 
+void ConnectionPage::onFormatChanged()
+{
+    if (pick(kFormat, ui->cmbFormato->currentIndex()) == ConnectionConfig::DataFormat::Receiver) {
+        // 1004 era el puerto de un servidor que ya no existe: el de datos del receptor es el 1003.
+        for (QSpinBox *port : {ui->spnEthPuerto, ui->spnWifiPuerto}) {
+            if (port->value() == 1004)
+                port->setValue(1003);
+        }
+    }
+    updateNetworkFieldStates();
+}
+
 void ConnectionPage::updateNetworkFieldStates()
 {
+    // Receptor: la PC es siempre cliente TCP del adc_server de la Red Pitaya.
+    const bool receiver = pick(kFormat, ui->cmbFormato->currentIndex())
+                          == ConnectionConfig::DataFormat::Receiver;
+    ui->cmbEthProtocolo->setEnabled(!receiver);
+    ui->cmbWifiProtocolo->setEnabled(!receiver);
+
     // Ethernet
-    const bool ethUdp = pick(kProtocol, ui->cmbEthProtocolo->currentIndex())
-                        == ConnectionConfig::Protocol::Udp;
-    const bool ethServer = pick(kRole, ui->cmbEthRol->currentIndex())
-                           == ConnectionConfig::Role::Server;
-    ui->cmbEthRol->setEnabled(!ethUdp);
+    const bool ethUdp = !receiver && pick(kProtocol, ui->cmbEthProtocolo->currentIndex())
+                                         == ConnectionConfig::Protocol::Udp;
+    const bool ethServer = !receiver && pick(kRole, ui->cmbEthRol->currentIndex())
+                                            == ConnectionConfig::Role::Server;
+    ui->cmbEthRol->setEnabled(!receiver && !ethUdp);
     ui->txtEthHost->setEnabled(!ethUdp && !ethServer);
     ui->spnEthPuerto->setEnabled(!ethUdp && !ethServer);
     ui->spnEthPuertoLocal->setEnabled(ethUdp || ethServer);
 
     // WiFi (la PC siempre es cliente en TCP)
-    const bool wifiUdp = pick(kProtocol, ui->cmbWifiProtocolo->currentIndex())
-                         == ConnectionConfig::Protocol::Udp;
+    const bool wifiUdp = !receiver && pick(kProtocol, ui->cmbWifiProtocolo->currentIndex())
+                                          == ConnectionConfig::Protocol::Udp;
     ui->spnWifiPuerto->setEnabled(!wifiUdp);
     ui->spnWifiPuertoLocal->setEnabled(wifiUdp);
 
@@ -274,6 +293,10 @@ ConnectionConfig ConnectionPage::currentConfig() const
         c.role = pick(kRole, ui->cmbEthRol->currentIndex());
         c.localAddress = ui->cmbEthAdaptador->currentData().toString();
     }
+    if (c.dataFormat == ConnectionConfig::DataFormat::Receiver) {
+        c.protocol = ConnectionConfig::Protocol::Tcp;
+        c.role = ConnectionConfig::Role::Client;
+    }
     return c;
 }
 
@@ -289,6 +312,13 @@ void ConnectionPage::onConnectClicked()
     }
 
     const ConnectionConfig cfg = currentConfig();
+    if (cfg.dataFormat == ConnectionConfig::DataFormat::Receiver
+        && cfg.interface == ConnectionConfig::Interface::Serial) {
+        setStatus(ConnectionManager::stateColor(ConnectionManager::State::Error),
+                  tr("El formato Receptor necesita Ethernet o WiFi"),
+                  tr("El receptor se conecta por la red al adc_server de la Red Pitaya."));
+        return;
+    }
     const bool needsHost = cfg.interface != ConnectionConfig::Interface::Serial
                            && cfg.protocol == ConnectionConfig::Protocol::Tcp
                            && cfg.role == ConnectionConfig::Role::Client;

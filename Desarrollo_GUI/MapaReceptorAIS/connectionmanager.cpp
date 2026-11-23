@@ -1,5 +1,7 @@
 #include "connectionmanager.h"
 
+#include "receiverlink.h"
+
 #include <QHostAddress>
 #include <QNetworkDatagram>
 #include <QTcpServer>
@@ -13,6 +15,8 @@ QString ConnectionConfig::summary() const
 
     const QString medium = interface == Interface::Wifi ? QStringLiteral("WiFi")
                                                         : QStringLiteral("Ethernet");
+    if (dataFormat == DataFormat::Receiver)
+        return QStringLiteral("%1 Receptor %2:%3").arg(medium, host).arg(port);
     if (protocol == Protocol::Udp)
         return QStringLiteral("%1 UDP :%2").arg(medium).arg(localPort);
     if (role == Role::Server)
@@ -74,7 +78,9 @@ void ConnectionManager::open(const ConnectionConfig &config)
     m_wantOpen = true;
     m_rxBytes = 0;
 
-    if (config.interface == ConnectionConfig::Interface::Serial)
+    if (config.dataFormat == ConnectionConfig::DataFormat::Receiver)
+        openReceiver();
+    else if (config.interface == ConnectionConfig::Interface::Serial)
         openSerial();
     else if (config.protocol == ConnectionConfig::Protocol::Udp)
         openUdp();
@@ -196,6 +202,39 @@ void ConnectionManager::openUdp()
     setState(State::Listening, tr("Escuchando en el puerto UDP %1").arg(m_config.localPort));
 }
 
+void ConnectionManager::openReceiver()
+{
+    if (m_config.interface == ConnectionConfig::Interface::Serial) {
+        fail(tr("El formato Receptor necesita Ethernet o WiFi"));
+        return;
+    }
+    if (m_config.host.isEmpty()) {
+        fail(tr("Falta la dirección de la Red Pitaya"));
+        return;
+    }
+    m_receiver = new ReceiverLink(this);
+    connect(m_receiver, &ReceiverLink::connected, this, [this] {
+        m_connectTimeout.stop();
+        setState(State::Connected, tr("Receptor en marcha en %1:%2").arg(m_config.host).arg(m_config.port));
+    });
+    connect(m_receiver, &ReceiverLink::failed, this, [this](const QString &message) { fail(message); });
+    connect(m_receiver, &ReceiverLink::wordsReceived, this, [this](const QVector<quint32> &words) {
+        // Para el monitor: los bits como bytes, en el orden en que llegan.
+        QByteArray raw;
+        raw.reserve(words.size() * 4);
+        for (quint32 w : words)
+            for (int shift = 24; shift >= 0; shift -= 8)
+                raw.append(char((w >> shift) & 0xFF));
+        m_rxBytes += quint64(raw.size());
+        emit wordsReceived(words);
+        emit dataReceived(raw);
+    });
+    connect(m_receiver, &ReceiverLink::statusUpdated, this, &ConnectionManager::receiverStatus);
+    setState(State::Connecting, tr("Conectando con %1:%2…").arg(m_config.host).arg(m_config.port));
+    m_connectTimeout.start(m_config.timeoutMs);
+    m_receiver->open(m_config.host, m_config.port, m_config.timeoutMs);
+}
+
 void ConnectionManager::attachTcpSocket(QTcpSocket *socket, bool fromServer)
 {
     m_tcp = socket;
@@ -253,6 +292,12 @@ void ConnectionManager::releaseResources()
     m_connectTimeout.stop();
     // Se desconectan las senales antes de cerrar para no recibir
     // errores/desconexiones provocados por el propio cierre.
+    if (m_receiver) {
+        m_receiver->disconnect(this);
+        m_receiver->close();
+        m_receiver->deleteLater();
+        m_receiver = nullptr;
+    }
     if (m_serial) {
         m_serial->disconnect(this);
         m_serial->close();

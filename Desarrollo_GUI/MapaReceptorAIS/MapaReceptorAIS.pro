@@ -16,10 +16,12 @@ SOURCES += \
     mainwindow.cpp \
     mappage.cpp \
     mapwidget.cpp \
+    receiverlink.cpp \
     sshpage.cpp \
     sshsession.cpp \
     vesseldetailpanel.cpp \
-    vesselmodel.cpp
+    vesselmodel.cpp \
+    ais_frame/ais_frame.c
 
 HEADERS += \
     aisdecoder.h \
@@ -30,10 +32,12 @@ HEADERS += \
     mainwindow.h \
     mappage.h \
     mapwidget.h \
+    receiverlink.h \
     sshpage.h \
     sshsession.h \
     vesseldetailpanel.h \
-    vesselmodel.h
+    vesselmodel.h \
+    ais_frame/ais_frame.h
 
 FORMS += \
     connectionpage.ui \
@@ -44,7 +48,8 @@ FORMS += \
 
 OTHER_FILES += \
     simulacion/generar_ais.py \
-    simulacion/ais_sim.sh
+    simulacion/ais_sim.sh \
+    simulacion/rp_falso.py
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

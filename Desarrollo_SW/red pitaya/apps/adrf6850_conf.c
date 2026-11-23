@@ -228,8 +228,13 @@ void adrf_conf_imprimir(const adrf_conf_t *c)
     printf("  banda base: %s, corte %d MHz | VOCM %s | bomba de carga: cp_code = 0x%X | LOMON: %s (%d dBm)\n",
            d->bb_wideband ? "wideband" : "narrow-band", fc_mhz[(int)d->bb_fc & 3], d->vocm_internal ? "interno" : "externo",
            (unsigned)d->cp_code, d->lomon_en ? "encendido" : "apagado", mon_dbm[(int)d->lomon_pwr & 3]);
+#if ADRF6850_VGA_DOBLE_PENDIENTE
+    printf("  ganancia: %.1f dB, VGAIN con doble pendiente (el driver elige la polaridad segun la ganancia; vga_pendiente no se usa)\n",
+           d->gain_mdb / 1000.0);
+#else
     printf("  ganancia: %.1f dB, pendiente de VGAIN %s (VGAIN sale de J2: se aplica a mano)\n",
            d->gain_mdb / 1000.0, d->vga_polarity ? "negativa" : "positiva");
+#endif
     if (d->verify_retries)
         printf("  escrituras verificadas: se lee cada registro y, si no coincide, se reescribe (hasta %u reintentos)\n", (unsigned)d->verify_retries);
     else

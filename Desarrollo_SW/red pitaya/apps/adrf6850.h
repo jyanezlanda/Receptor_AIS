@@ -36,6 +36,18 @@ extern "C" {
 #define ADRF6850_LO_MAX_HZ              1000000000UL
 #define ADRF6850_FRAC_MOD               (1UL << 25)     /* 25-bit fixed modulus */
 
+/* VGA gain law, chosen at build time.
+ *   1 = two slopes with hysteresis: the driver picks the slope polarity (CR30 bit 2) from the gain, positive up to
+ *       the break and negative above it, so 0..60 dB needs VGAIN <= 775 mV. vga_polarity in the configuration is ignored.
+ *   0 = one fixed slope: the polarity is vga_polarity from the configuration.
+ * Build with -DADRF6850_VGA_DOBLE_PENDIENTE=0 for the fixed slope. */
+#ifndef ADRF6850_VGA_DOBLE_PENDIENTE
+#define ADRF6850_VGA_DOBLE_PENDIENTE    1
+#endif
+#define ADRF6850_VGA_BREAK_MDB          30000   /* gain at which both slopes give the same VGAIN */
+#define ADRF6850_VGA_BREAK_MV           750     /* VGAIN at the break: 25 mV/dB x 30 dB */
+#define ADRF6850_VGA_HYST_MDB           1000    /* hysteresis on each side of the break */
+
 /* =========================================================================
  * 2. REGISTER MAP (Data Sheet, Table 8)
  * ========================================================================= */
@@ -187,6 +199,7 @@ typedef struct {
     adrf6850_bb_fc_t bb_fc;
     uint8_t   cp_code;
     uint8_t   autocal_off;
+    uint8_t   vga_pol;      /**< CR30 bit 2 in use: 0 = positive slope, 1 = negative */
 } adrf6850_state_t;
 
 /* =========================================================================

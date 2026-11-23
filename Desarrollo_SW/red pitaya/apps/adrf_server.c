@@ -1,8 +1,8 @@
 /*
  * adrf_server.c -- Servidor TCP del ADRF6850 para la Red Pitaya, para el bitstream en que el DAC se maneja por registro.
  *
- * Compilar:  gcc -O2 -Wall adrf_server.c adrf6850.c adrf6850_conf.c -o adrf_server
- * Usar:      ./adrf_server [-c archivo.conf] [-a] [-d [-F mV] [-O mV]] [-p puerto] [-i pausa_us]
+ * Compilar:  gcc -O2 -Wall adrf_server.c adrf6850.c adrf6850_conf.c agc.c -lm -pthread -o adrf_server
+ * Usar:      ./adrf_server_dacreg [-c archivo.conf] [-a] [-d [-F mV] [-O mV]] [-g agc.conf | -n] [-p puerto] [-i pausa_us]
  *
  *   -p  puerto TCP (1005 por defecto; el servidor de datos usa 1003)
  *   -c  archivo de configuracion: se lee y valida al arrancar. Sin -c solo se puede inicializar con CMD_ADRF_INIT_CFG.
@@ -13,6 +13,10 @@
  *       que es lo que hay que usar si el bitstream no esta cargado.
  *   -F  con -d: mV que suma el codigo maximo del DAC con la carga de VGAIN (1000 por defecto)
  *   -O  con -d: mV con el codigo 0 (0 por defecto)
+ *   -g  con -d: archivo de configuracion del AGC (agc.conf). El AGC lleva la ganancia del ADRF segun el pico de cada rafaga
+ *       (registro por rafaga de la FPGA, sts[3] y sts[4]); ver agc.h. Con -d y sin -g el AGC arranca activado con los parametros por
+ *       defecto (los de agc.conf); con -g, activado o no segun 'activo' del archivo.
+ *   -n  con -d: sin AGC al arrancar; se configura y activa con CMD_ADRF_AGC_SET. No se combina con -g.
  *
  * Protocolo: 1 byte de comando + 4 bytes de payload (little-endian). La respuesta es 1 byte (0x01 = ok, 0x00 = error)
  * salvo en los comandos que devuelven datos:
@@ -26,6 +30,17 @@
  *               contesta el resultado. Asi un servidor que no conoce el comando no toma los datos por comandos.
  *   VGAIN_RAW   payload = codigo del DAC (0 a 8191), sin conversion ni limite de tension; error sin -d o fuera de rango
  *   GET_VGAIN   1 + ADRF_VGAIN_WIRE_BYTES bytes: [ok, codigo, pedido_mv, efectivo_mv] (u16 cada uno; ok = 0 sin -d)
+ *   AGC_SET     en dos pasos, como INIT_CFG: [cmd][payload = AGC_SET_WIRE_BYTES]; el servidor contesta 0x01 (listo) o 0x00; luego el
+ *               cliente manda [activar u32][ganancia inicial en mdB i32, -1 = no cambiarla][usar_parametros u32][13 parametros u32]
+ *               y el servidor contesta 0x01 o 0x00 (sin -d, ADRF sin inicializar, parametros invalidos o ganancia inicial fuera de
+ *               rango). Activar con parametros nuevos reinicia la ventana y los contadores. Una orden de activar que falla deja
+ *               el AGC desactivado.
+ *   AGC_GET     1 + AGC_GET_WIRE_BYTES bytes: [ok][activo, ganancia mdB (i32), rafagas, cambios, protecciones, ultimo pico, t_ms,
+ *               seq, errores][13 parametros]; ok = 0 sin -d. Todo u32 little-endian.
+ *   AGC_LOG     payload = seq desde la que se piden registros; responde [ok][seq u32][n u32] y n registros de AGC_REG_BYTES bytes
+ *               (t_ms, pico, referencia, error en cdB, ganancia antes y despues en mdB, flags: bit 0 cambio, bit 1 proteccion).
+ *               Guarda los ultimos AGC_LOG_N.
+ * Un mutex protege el driver, el DAC y el estado del AGC: lo toman los comandos y el hilo del AGC.
  * Este proceso es el unico dueño de /dev/spidev1.0.
  */
 #include <stdio.h>
@@ -42,9 +57,13 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <linux/spi/spidev.h>
+#include <math.h>
+#include <pthread.h>
+#include <time.h>
 
 #include "adrf6850.h"
 #include "adrf6850_conf.h"
+#include "agc.h"
 
 #define TCP_PORT_DEFECTO     1005
 
@@ -59,6 +78,9 @@
 #define CMD_ADRF_GET_VERIFY  0x18   /* responde 1 + ADRF_VERIFY_WIRE_BYTES bytes: verificacion de la ultima operacion */
 #define CMD_ADRF_VGAIN_RAW   0x19   /* payload = codigo del DAC de VGAIN (0 a 8191) */
 #define CMD_ADRF_GET_VGAIN   0x1A   /* responde 1 + ADRF_VGAIN_WIRE_BYTES bytes: codigo y tensiones de VGAIN */
+#define CMD_ADRF_AGC_SET     0x1B   /* payload = AGC_SET_WIRE_BYTES; en dos pasos */
+#define CMD_ADRF_AGC_GET     0x1C   /* responde 1 + AGC_GET_WIRE_BYTES bytes: estado y parametros del AGC */
+#define CMD_ADRF_AGC_LOG     0x1D   /* payload = seq desde la que se piden registros */
 
 #define ADRF_REG_MAX         0x21u  /* CR33 (codigo de revision) es el ultimo registro */
 
@@ -73,6 +95,11 @@ static volatile sig_atomic_t g_stop = 0;
 static unsigned g_pausa_us = 0;       /* -i */
 static adrf_conf_t g_conf;            /* configuracion leida del .conf (-c) */
 static int g_conf_cargada = 0;        /* 1 si se dio -c y el archivo se leyo bien */
+
+static pthread_mutex_t g_mtx = PTHREAD_MUTEX_INITIALIZER;   /* driver, DAC y estado del AGC */
+#define BLOQUEAR()    pthread_mutex_lock(&g_mtx)
+#define DESBLOQUEAR() pthread_mutex_unlock(&g_mtx)
+static __thread int t_agc = 0;        /* 1 mientras el hilo del AGC cambia la ganancia: no se imprime cada cambio */
 
 /* ---- SPI (spidev): inicio ---- */
 #define ADRF_SPI_DEVICE     "/dev/spidev1.0"
@@ -146,6 +173,13 @@ void adrf6850_hw_spi_xfer(const uint8_t *tx, uint8_t *rx, uint32_t len)
     pausa_spi();
 }
 
+int adrf6850_hw_ldet_read(void)
+{
+    /* LDET (pin 40) solo llega a R2 y al LED D3, no a un GPIO: se devuelve -1 y el driver espera un tiempo fijo.
+     * init y set_lo no confirman el enganche del PLL; se mira en LDET o en D3. Con LDET en un GPIO, leerlo aca (0/1). */
+    return -1;
+}
+
 /* ---- VGAIN por el DAC ---- */
 #define VGAIN_REG_BASE     0x40000000u   /* hub del receptor */
 #define VGAIN_REG_PALABRA  2u            /* cfg_data[95:64]: la palabra del DAC; el canal B (OUT2) va en los bits 29:16 */
@@ -183,6 +217,28 @@ static void vgain_reg_cerrar(void)
     g_vgain_mem_fd = -1;
 }
 /* ---- Registro de VGAIN: fin ---- */
+
+/* ---- Registros de la FPGA para el AGC: inicio ---- */
+#define STS_BASE      0x41000000u   /* registros de estado del receptor; el registro por rafaga es sts[3] y sts[4] */
+static volatile uint32_t *g_sts = NULL;   /* NULL: sin AGC */
+
+static int sts_abrir(void)
+{
+    void *p;
+
+    if (g_vgain_mem_fd < 0) return -1;
+    p = mmap(NULL, 4096, PROT_READ, MAP_SHARED, g_vgain_mem_fd, STS_BASE);
+    if (p == MAP_FAILED) { perror("mmap /dev/mem (sts)"); return -1; }
+    g_sts = (volatile uint32_t *)p;
+    return 0;
+}
+
+static void sts_cerrar(void)
+{
+    if (g_sts) munmap((void *)g_sts, 4096);
+    g_sts = NULL;
+}
+/* ---- Registros de la FPGA para el AGC: fin ---- */
 
 /* Codigo del DAC para mv milivoltios en VGAIN: se limita a 0..VGAIN_MAX_MV y al fondo de escala; nunca es negativo. */
 static uint32_t vgain_mv_a_codigo(unsigned mv)
@@ -230,8 +286,9 @@ int adrf6850_hw_vgain_set_mv(uint16_t mv)
     if (vgain_escribir(codigo) < 0) return -1;         /* != 0 hace fallar el init o el set_gain */
     g_vgain_pedido_mv = mv;
     efectivo = vgain_codigo_a_mv(codigo);
-    printf("ADRF: VGAIN por el DAC: %u mV pedidos -> codigo %u (%u mV)%s\n", (unsigned)mv, codigo, efectivo,
-           ((unsigned)mv > efectivo + 1u) ? " [el DAC no llega a la tension pedida]" : "");
+    if (!t_agc)
+        printf("ADRF: VGAIN por el DAC: %u mV pedidos -> codigo %u (%u mV)%s\n", (unsigned)mv, codigo, efectivo,
+               ((unsigned)mv > efectivo + 1u) ? " [el DAC no llega a la tension pedida]" : "");
     return 0;
 }
 
@@ -340,6 +397,227 @@ static void estado_a_cable(const adrf6850_state_t *s, uint8_t *w)
 }
 
 /* ---- red ---- */
+/* ---- AGC ---- */
+#define AGC_LOG_N              256u
+#define AGC_REG_BYTES          28u                              /* t_ms, pico, ref (u32); err_cdb, g_antes_mdb, g_mdb (i32); flags (u32) */
+#define AGC_PARAMS_WIRE_BYTES  52u                              /* 13 palabras u32: ver agc_params_a_cable */
+#define AGC_SET_WIRE_BYTES     (12u + AGC_PARAMS_WIRE_BYTES)    /* activar, ganancia inicial (mdB), usar_parametros, parametros */
+#define AGC_GET_WIRE_BYTES     (36u + AGC_PARAMS_WIRE_BYTES)    /* 9 palabras de estado y los parametros */
+
+typedef struct { uint32_t t_ms, pico, ref; int32_t err_cdb, g_antes_mdb, g_mdb; uint32_t flags; } agc_reg_t;
+
+static agc_t g_agc;                         /* parametros y estado del AGC */
+static int g_agc_listo = 0;                 /* hay parametros (del .conf o del cliente) */
+static volatile int g_agc_activo = 0;
+static volatile int g_agc_pend_ini = 0;     /* llevar a g_inicial_db cuando el ADRF este inicializado */
+static agc_reg_t g_agc_log[AGC_LOG_N];
+static uint32_t g_agc_seq = 0;              /* rafagas registradas desde que arranco el servidor */
+static uint32_t g_agc_ult_pico = 0, g_agc_errores = 0;
+static pthread_t g_agc_th;
+static int g_agc_th_vivo = 0;
+static struct timespec g_t0;
+
+static uint32_t ahora_ms(void)
+{
+    struct timespec t;
+    long long ms;
+
+    clock_gettime(CLOCK_MONOTONIC, &t);
+    ms = (long long)(t.tv_sec - g_t0.tv_sec) * 1000 + (t.tv_nsec - g_t0.tv_nsec) / 1000000;
+    return (uint32_t)ms;
+}
+
+static void agc_params_a_cable(const agc_params_t *p, uint8_t *w)
+{
+    wr_u32(w + 0,  (uint32_t)lround(p->objetivo));
+    wr_u32(w + 4,  (uint32_t)p->ventana);
+    wr_u32(w + 8,  (uint32_t)lround(p->percentil * 100.0));
+    wr_u32(w + 12, (uint32_t)lround(p->zona_muerta_db * 100.0));
+    wr_u32(w + 16, (uint32_t)lround(p->kp * 1000.0));
+    wr_u32(w + 20, (uint32_t)lround(p->paso_max_db * 1000.0));
+    wr_u32(w + 24, (uint32_t)p->liberacion_rafagas);
+    wr_u32(w + 28, (uint32_t)lround(p->paso_liberacion_db * 1000.0));
+    wr_u32(w + 32, (uint32_t)lround(p->nivel_proteccion));
+    wr_u32(w + 36, (uint32_t)lround(p->g_min_db * 1000.0));
+    wr_u32(w + 40, (uint32_t)lround(p->g_max_db * 1000.0));
+    wr_u32(w + 44, (uint32_t)lround(p->planta * 1000.0));
+    wr_u32(w + 48, (uint32_t)lround(p->g_inicial_db * 1000.0));
+}
+
+static void agc_params_desde_cable(const uint8_t *w, agc_params_t *p)
+{
+    p->objetivo           = (double)rd_u32(w + 0);
+    p->ventana            = (int)rd_u32(w + 4);
+    p->percentil          = rd_u32(w + 8) / 100.0;
+    p->zona_muerta_db     = rd_u32(w + 12) / 100.0;
+    p->kp                 = rd_u32(w + 16) / 1000.0;
+    p->paso_max_db        = rd_u32(w + 20) / 1000.0;
+    p->liberacion_rafagas = (int)rd_u32(w + 24);
+    p->paso_liberacion_db = rd_u32(w + 28) / 1000.0;
+    p->nivel_proteccion   = (double)rd_u32(w + 32);
+    p->g_min_db           = rd_u32(w + 36) / 1000.0;
+    p->g_max_db           = rd_u32(w + 40) / 1000.0;
+    p->planta             = rd_u32(w + 44) / 1000.0;
+    p->g_inicial_db       = rd_u32(w + 48) / 1000.0;
+}
+
+/* Con g_mtx tomado. */
+static int agc_poner_ganancia(double g_db)
+{
+    int ok;
+
+    t_agc = 1;
+    ok = adrf6850_set_gain_mdb((int32_t)lround(g_db * 1000.0)) == ADRF6850_OK;
+    t_agc = 0;
+    return ok;
+}
+
+/* Con g_mtx tomado. 0 si queda como se pidio. Una orden de activar que falla deja el AGC desactivado. */
+static int agc_activar(int activar, int32_t g_ini_mdb, const agc_params_t *nuevos)
+{
+    g_agc_activo = 0;
+    g_agc_pend_ini = 0;
+    if (!activar) return 0;
+    if (g_sts == NULL || g_vgain_reg == NULL || !adrf6850_get_state()->initialized) return -1;
+    if (nuevos != NULL) agc_iniciar(&g_agc, nuevos);
+    else if (g_agc_listo) agc_iniciar(&g_agc, &g_agc.p);
+    else return -1;
+    g_agc_listo = 1;
+    if (g_ini_mdb >= 0) {
+        double g = g_ini_mdb / 1000.0;
+
+        if (g < g_agc.p.g_min_db || g > g_agc.p.g_max_db || !agc_poner_ganancia(g)) return -1;
+    }
+    g_agc_activo = 1;
+    return 0;
+}
+
+/* Con g_mtx tomado: una rafaga con pico valido. */
+static void agc_procesar(uint32_t pico)
+{
+    const adrf6850_state_t *st = adrf6850_get_state();
+    int32_t g_antes_mdb = st->gain_mdb;
+    agc_paso_t r;
+    agc_reg_t *e = &g_agc_log[g_agc_seq % AGC_LOG_N];
+
+    if (!st->initialized) return;
+    r = agc_rafaga(&g_agc, (double)pico, g_antes_mdb / 1000.0);
+    if (r.cambio && !agc_poner_ganancia(r.g_nueva_db)) g_agc_errores++;
+    e->t_ms = ahora_ms();
+    e->pico = pico;
+    e->ref = (uint32_t)lround(r.ref);
+    e->err_cdb = (int32_t)lround(r.err_db * 100.0);
+    e->g_antes_mdb = g_antes_mdb;
+    e->g_mdb = adrf6850_get_state()->gain_mdb;
+    e->flags = (r.cambio ? 1u : 0u) | (r.proteccion ? 2u : 0u);
+    g_agc_ult_pico = pico;
+    g_agc_seq++;
+}
+
+/* Sondea el registro por rafaga cada 2 ms; sts[3] bits 19:0 pico y 31:20 contador, sts[4] bit 16 pico valido. El par se lee
+ * sts[3], sts[4], sts[3] y se repite si el contador cambio. Sin rafagas no hace nada. */
+static void *agc_hilo(void *arg)
+{
+    struct timespec dt = { 0, 2000000L };
+    uint32_t ult = g_sts[3] >> 20;
+
+    (void)arg;
+    while (!g_stop) {
+        uint32_t a, b, c;
+        int n = 0;
+
+        nanosleep(&dt, NULL);
+        if (g_agc_pend_ini) {                                   /* arranque en la ganancia conocida, aunque no haya rafagas */
+            BLOQUEAR();
+            if (g_agc_pend_ini && adrf6850_get_state()->initialized) {
+                g_agc_pend_ini = 0;
+                if (agc_poner_ganancia(g_agc.p.g_inicial_db)) printf("AGC: arranca en %.1f dB\n", g_agc.p.g_inicial_db);
+                else { g_agc_activo = 0; fprintf(stderr, "AGC: no se pudo llevar la ganancia a %.1f dB; desactivado\n", g_agc.p.g_inicial_db); }
+            }
+            DESBLOQUEAR();
+        }
+        do { a = g_sts[3]; b = g_sts[4]; c = g_sts[3]; } while (a != c && ++n < 4);
+        if ((c >> 20) == ult) continue;
+        ult = c >> 20;
+        if (!((b >> 16) & 1u)) continue;
+        BLOQUEAR();
+        if (g_agc_activo && !g_agc_pend_ini) agc_procesar(c & 0xFFFFFu);
+        DESBLOQUEAR();
+    }
+    return NULL;
+}
+
+/* AGC_SET, segundo paso: 1 si quedo como se pidio. */
+static int agc_comando_set(const uint8_t *w)
+{
+    uint32_t activar = rd_u32(w), usar = rd_u32(w + 8);
+    int32_t g_ini = (int32_t)rd_u32(w + 4);
+    agc_params_t pp;
+    char err[160];
+    int ok;
+
+    memset(&pp, 0, sizeof(pp));
+    if (activar && usar) {
+        agc_params_desde_cable(w + 12, &pp);
+        if (agc_params_validar(&pp, err, sizeof(err)) != 0) {
+            fprintf(stderr, "AGC: parametros rechazados: %s\n", err);
+            BLOQUEAR();
+            agc_activar(0, -1, NULL);                   /* una orden de activar que falla deja el AGC desactivado */
+            DESBLOQUEAR();
+            return 0;
+        }
+    }
+    BLOQUEAR();
+    ok = agc_activar(activar != 0, g_ini, usar ? &pp : NULL) == 0;
+    DESBLOQUEAR();
+    printf("AGC: %s -> %s\n", activar ? "activar" : "desactivar", ok ? "ok" : "rechazado");
+    return ok;
+}
+
+static void agc_get_a_cable(uint8_t *w)             /* 1 + AGC_GET_WIRE_BYTES bytes */
+{
+    memset(w, 0, 1 + AGC_GET_WIRE_BYTES);
+    if (g_sts == NULL) return;
+    w[0] = 0x01;
+    BLOQUEAR();
+    wr_u32(w + 1,  g_agc_activo ? 1u : 0u);
+    wr_u32(w + 5,  (uint32_t)adrf6850_get_state()->gain_mdb);
+    wr_u32(w + 9,  g_agc.rafagas);
+    wr_u32(w + 13, g_agc.cambios);
+    wr_u32(w + 17, g_agc.protecciones);
+    wr_u32(w + 21, g_agc_ult_pico);
+    wr_u32(w + 25, ahora_ms());
+    wr_u32(w + 29, g_agc_seq);
+    wr_u32(w + 33, g_agc_errores);
+    agc_params_a_cable(&g_agc.p, w + 37);
+    DESBLOQUEAR();
+}
+
+static size_t agc_log_a_cable(uint32_t desde, uint8_t *w)   /* 9 + n * AGC_REG_BYTES bytes; devuelve el largo */
+{
+    uint32_t seq, ini, n, k;
+
+    BLOQUEAR();
+    seq = g_agc_seq;
+    ini = (seq > AGC_LOG_N) ? seq - AGC_LOG_N : 0;
+    if (desde > ini) ini = desde;
+    n = (seq > ini) ? seq - ini : 0;
+    w[0] = (g_sts != NULL) ? 0x01 : 0x00;
+    wr_u32(w + 1, seq);
+    wr_u32(w + 5, n);
+    for (k = 0; k < n; k++) {
+        const agc_reg_t *e = &g_agc_log[(ini + k) % AGC_LOG_N];
+        uint8_t *q = w + 9 + k * AGC_REG_BYTES;
+
+        wr_u32(q, e->t_ms); wr_u32(q + 4, e->pico); wr_u32(q + 8, e->ref);
+        wr_u32(q + 12, (uint32_t)e->err_cdb); wr_u32(q + 16, (uint32_t)e->g_antes_mdb); wr_u32(q + 20, (uint32_t)e->g_mdb);
+        wr_u32(q + 24, e->flags);
+    }
+    DESBLOQUEAR();
+    return 9 + (size_t)n * AGC_REG_BYTES;
+}
+/* ---- AGC: fin ---- */
+
 static void on_signal(int sig) { (void)sig; g_stop = 1; }
 
 static int recv_all(int fd, void *buf, size_t len)
@@ -392,8 +670,10 @@ static void atender(int fd)
                 if (responder(fd, 0) < 0) return;
                 break;
             }
+            BLOQUEAR();
             st = adrf6850_init(&g_conf.drv);
             informar_verificacion("init", st);
+            DESBLOQUEAR();
             printf("ADRF: init -> %d\n", (int)st);
             if (responder(fd, st == ADRF6850_OK) < 0) return;
             break;
@@ -410,6 +690,7 @@ static void atender(int fd)
             if (responder(fd, 1) < 0) return;               /* paso 1: listo para recibir la configuracion */
             if (recv_all(fd, w, sizeof(w)) < 0) return;
             cfg_desde_cable(w, &cfg);
+            BLOQUEAR();
             st = adrf6850_validate_config(&cfg);
             if (st != ADRF6850_OK) {
                 fprintf(stderr, "ADRF: configuracion del cliente rechazada por el driver (codigo %d): no se toco el chip\n", (int)st);
@@ -420,6 +701,7 @@ static void atender(int fd)
                 st = adrf6850_init(&cfg);
                 informar_verificacion("init (configuracion del cliente)", st);
             }
+            DESBLOQUEAR();
             printf("ADRF: init (configuracion del cliente) -> %d\n", (int)st);
             if (responder(fd, st == ADRF6850_OK) < 0) return;   /* paso 2: resultado */
             break;
@@ -429,7 +711,9 @@ static void atender(int fd)
             uint8_t w[1 + ADRF_VERIFY_WIRE_BYTES];
             adrf6850_verify_stats_t v;
 
+            BLOQUEAR();
             adrf6850_get_verify_stats(&v);
+            DESBLOQUEAR();
             w[0] = 0x01;
             wr_u32(w + 1, v.writes);
             wr_u32(w + 5, v.retries);
@@ -472,9 +756,11 @@ static void atender(int fd)
             }
             if (recv_all(fd, w, sizeof(w)) < 0) return;
             params_desde_cable(w, &p);
+            BLOQUEAR();
             adrf6850_clear_verify_stats();
             st = adrf6850_update(&p);
             informar_verificacion("update", st);
+            DESBLOQUEAR();
             printf("ADRF: update (mask=0x%02X) -> %d\n", (unsigned)p.mask, (int)st);
             if (responder(fd, st == ADRF6850_OK) < 0) return;
             break;
@@ -482,22 +768,28 @@ static void atender(int fd)
 
         case CMD_ADRF_GET_STATE: {
             uint8_t w[ADRF_STATE_WIRE_BYTES];
+            BLOQUEAR();
             estado_a_cable(adrf6850_get_state(), w);
+            DESBLOQUEAR();
             if (send_all(fd, w, sizeof(w)) < 0) return;
             break;
         }
 
         case CMD_ADRF_SET_LO:
+            BLOQUEAR();
             adrf6850_clear_verify_stats();
             st = adrf6850_set_lo(payload);
             informar_verificacion("set_lo", st);
+            DESBLOQUEAR();
             printf("ADRF: set_lo(%u Hz) -> %d\n", payload, (int)st);
             if (responder(fd, st == ADRF6850_OK) < 0) return;
             break;
 
         case CMD_ADRF_SET_GAIN: {
             int32_t gain_mdb = (int32_t)payload;
+            BLOQUEAR();
             st = adrf6850_set_gain_mdb(gain_mdb);
+            DESBLOQUEAR();
             printf("ADRF: set_gain(%d mdB) -> %d\n", gain_mdb, (int)st);
             if (responder(fd, st == ADRF6850_OK) < 0) return;
             break;
@@ -507,7 +799,9 @@ static void atender(int fd)
             uint8_t resp[2] = { 0x00, 0x00 };
 
             if (payload <= ADRF_REG_MAX) {
+                BLOQUEAR();
                 resp[1] = adrf6850_read_reg((uint8_t)payload);
+                DESBLOQUEAR();
                 resp[0] = 0x01;
                 printf("ADRF: read_reg(CR%u) -> 0x%02X\n", payload, (unsigned)resp[1]);
             } else {
@@ -520,6 +814,7 @@ static void atender(int fd)
         case CMD_ADRF_VGAIN_RAW: {
             int ok = 0;
 
+            BLOQUEAR();
             if (g_vgain_reg == NULL) {
                 fprintf(stderr, "ADRF: VGAIN_RAW rechazado: el servidor no tiene el DAC activado (-d)\n");
             } else if (payload > DAC_CODIGO_MAX) {
@@ -529,6 +824,7 @@ static void atender(int fd)
                 printf("ADRF: VGAIN por el DAC: codigo %u (%u mV)\n", payload, g_vgain_pedido_mv);
                 ok = 1;
             }
+            DESBLOQUEAR();
             if (responder(fd, ok) < 0) return;
             break;
         }
@@ -545,6 +841,36 @@ static void atender(int fd)
                 wr_u16(w + 5, (uint16_t)vgain_codigo_a_mv(codigo));
             }
             if (send_all(fd, w, sizeof(w)) < 0) return;
+            break;
+        }
+
+        case CMD_ADRF_AGC_SET: {
+            uint8_t w[AGC_SET_WIRE_BYTES];
+
+            if (payload != AGC_SET_WIRE_BYTES) {
+                fprintf(stderr, "ADRF: CMD_ADRF_AGC_SET con payload=%u, se esperaban %u bytes\n", payload, AGC_SET_WIRE_BYTES);
+                if (responder(fd, 0) < 0) return;           /* el cliente no manda los datos si recibe 0x00 */
+                break;
+            }
+            if (responder(fd, 1) < 0) return;               /* paso 1: listo para recibir */
+            if (recv_all(fd, w, sizeof(w)) < 0) return;
+            if (responder(fd, agc_comando_set(w)) < 0) return;   /* paso 2: resultado */
+            break;
+        }
+
+        case CMD_ADRF_AGC_GET: {
+            uint8_t w[1 + AGC_GET_WIRE_BYTES];
+
+            agc_get_a_cable(w);
+            if (send_all(fd, w, sizeof(w)) < 0) return;
+            break;
+        }
+
+        case CMD_ADRF_AGC_LOG: {
+            uint8_t w[9 + AGC_LOG_N * AGC_REG_BYTES];
+            size_t n = agc_log_a_cable(payload, w);
+
+            if (send_all(fd, w, n) < 0) return;
             break;
         }
 
@@ -616,20 +942,23 @@ int main(int argc, char **argv)
     struct sigaction sa;
     struct sockaddr_in addr;
     int puerto = TCP_PORT_DEFECTO, yes = 1, i;
-    const char *conf_ruta = NULL;
-    int auto_init = 0, usar_dac = 0, fs_dado = 0, off_dado = 0;
+    const char *conf_ruta = NULL, *agc_ruta = NULL;
+    int agc_activo_conf = 0;
+    int auto_init = 0, usar_dac = 0, fs_dado = 0, off_dado = 0, sin_agc = 0;
     int srv;
 
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-p") == 0 && i + 1 < argc)      puerto = atoi(argv[++i]);
         else if (strcmp(argv[i], "-c") == 0 && i + 1 < argc) conf_ruta = argv[++i];
+        else if (strcmp(argv[i], "-g") == 0 && i + 1 < argc) agc_ruta = argv[++i];
         else if (strcmp(argv[i], "-i") == 0 && i + 1 < argc) g_pausa_us = (unsigned)atoi(argv[++i]);
         else if (strcmp(argv[i], "-a") == 0)                 auto_init = 1;
         else if (strcmp(argv[i], "-d") == 0)                 usar_dac = 1;
+        else if (strcmp(argv[i], "-n") == 0)                 sin_agc = 1;
         else if (strcmp(argv[i], "-F") == 0 && i + 1 < argc) { if (parse_mv(argv[++i], &g_dac_fs_mv) < 0)  return uso_mv(argv[i - 1], argv[i]); fs_dado = 1; }
         else if (strcmp(argv[i], "-O") == 0 && i + 1 < argc) { if (parse_mv(argv[++i], &g_dac_off_mv) < 0) return uso_mv(argv[i - 1], argv[i]); off_dado = 1; }
         else {
-            fprintf(stderr, "uso: %s [-c archivo.conf] [-a] [-d [-F mV] [-O mV]] [-p puerto] [-i pausa_spi_us]\n", argv[0]);
+            fprintf(stderr, "uso: %s [-c archivo.conf] [-a] [-d [-F mV] [-O mV]] [-g agc.conf | -n] [-p puerto] [-i pausa_spi_us]\n", argv[0]);
             return 2;
         }
     }
@@ -639,6 +968,14 @@ int main(int argc, char **argv)
     }
     if (g_dac_fs_mv < 100.0 || g_dac_fs_mv > 5000.0 || g_dac_off_mv < -200.0 || g_dac_off_mv > 200.0) {
         fprintf(stderr, "-F debe estar entre 100 y 5000 mV y -O entre -200 y 200 mV (se dio %.1f y %.1f)\n", g_dac_fs_mv, g_dac_off_mv);
+        return 2;
+    }
+    if (agc_ruta != NULL && !usar_dac) {
+        fprintf(stderr, "-g solo vale con -d (el AGC mueve VGAIN por el DAC)\n");
+        return 2;
+    }
+    if (agc_ruta != NULL && sin_agc) {
+        fprintf(stderr, "-g y -n se excluyen: -n es arrancar sin AGC\n");
         return 2;
     }
     if (auto_init && conf_ruta == NULL) {
@@ -657,6 +994,7 @@ int main(int argc, char **argv)
     sigaction(SIGINT, &sa, NULL);
     sigaction(SIGTERM, &sa, NULL);
 
+    printf("ADRF: VGA con %s\n", ADRF6850_VGA_DOBLE_PENDIENTE ? "doble pendiente con histeresis (quiebre en 30 dB = 750 mV, +-1 dB)" : "pendiente fija (la de vga_pendiente del .conf)");
     if (conf_ruta != NULL) {
         if (cargar_configuracion(conf_ruta) < 0) return 1;  /* antes de abrir el SPI: un .conf malo no toca nada */
         g_conf_cargada = 1;
@@ -664,11 +1002,35 @@ int main(int argc, char **argv)
         printf("ADRF: sin .conf: solo CMD_ADRF_INIT_CFG puede inicializar el chip (con los valores del cliente)\n");
     }
 
+    if (agc_ruta != NULL) {
+        agc_params_t pp;
+        char err[320];
+
+        if (agc_leer_conf(agc_ruta, &pp, &agc_activo_conf, err, sizeof(err)) != 0) {
+            fprintf(stderr, "AGC: configuracion '%s' invalida: %s\n", agc_ruta, err);
+            return 1;
+        }
+        agc_iniciar(&g_agc, &pp);
+        g_agc_listo = 1;
+        printf("AGC: configuracion leida de '%s': objetivo %.0f, percentil %.0f de %d rafagas, zona muerta %.2f dB, proteccion sobre %.0f, de %.1f a %.1f dB, arranca en %.1f dB, %s\n",
+               agc_ruta, pp.objetivo, pp.percentil, pp.ventana, pp.zona_muerta_db, pp.nivel_proteccion, pp.g_min_db, pp.g_max_db, pp.g_inicial_db,
+               agc_activo_conf ? "activado al arrancar" : "desactivado al arrancar");
+    }
+    else if (usar_dac && !sin_agc) {
+        agc_params_t pp;
+
+        agc_params_defecto(&pp);
+        agc_iniciar(&g_agc, &pp);
+        g_agc_listo = 1;
+        agc_activo_conf = 1;
+        printf("AGC: sin -g, parametros por defecto (los de agc.conf), arranca en %.1f dB, activado al arrancar (-n lo evita)\n", pp.g_inicial_db);
+    }
     if (usar_dac) {
         if (vgain_reg_abrir() < 0) return 1;
         printf("ADRF: VGAIN por el DAC (OUT2): fondo de escala %.1f mV, offset %.1f mV, maximo alcanzable %u mV\n",
                g_dac_fs_mv, g_dac_off_mv, vgain_codigo_a_mv(DAC_CODIGO_MAX) < VGAIN_MAX_MV ? vgain_codigo_a_mv(DAC_CODIGO_MAX) : VGAIN_MAX_MV);
     }
+    if (usar_dac && sts_abrir() < 0) fprintf(stderr, "AGC: no se pudieron mapear los registros de estado: el AGC no estara disponible\n");
     if (adrf_spi_init(ADRF_SPI_DEVICE) < 0) {
         fprintf(stderr, "ADRF: sin SPI este servidor no tiene nada que hacer; saliendo.\n");
         vgain_reg_cerrar();
@@ -676,6 +1038,17 @@ int main(int argc, char **argv)
     }
     if (g_pausa_us > 0) printf("ADRF: pausa de %u us tras cada transaccion SPI\n", g_pausa_us);
     if (auto_init) iniciar_al_arrancar();
+    clock_gettime(CLOCK_MONOTONIC, &g_t0);
+    if (g_sts != NULL) {
+        if (agc_activo_conf) { g_agc_activo = 1; g_agc_pend_ini = 1; }
+        if (pthread_create(&g_agc_th, NULL, agc_hilo, NULL) == 0) {
+            g_agc_th_vivo = 1;
+        } else {
+            perror("pthread_create");
+            g_agc_activo = 0; g_agc_pend_ini = 0;
+            sts_cerrar();
+        }
+    }
 
     srv = socket(AF_INET, SOCK_STREAM, 0);
     if (srv < 0) { perror("socket"); adrf_spi_close(); vgain_reg_cerrar(); return 1; }
@@ -707,8 +1080,11 @@ int main(int argc, char **argv)
         printf("Cliente desconectado.\n");
     }
 
+    g_stop = 1;
+    if (g_agc_th_vivo) pthread_join(g_agc_th, NULL);
     close(srv);
     adrf_spi_close();
+    sts_cerrar();
     vgain_reg_cerrar();
     printf("Saliendo.\n");
     return 0;

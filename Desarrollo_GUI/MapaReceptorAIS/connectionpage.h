@@ -38,6 +38,7 @@ private:
     void refreshAdapters();
     void updateSerialPortInfo();
     void updateNetworkFieldStates();
+    void onFormatChanged();
     void onConnectClicked();
     void onTestClicked();
     void onStateChanged(ConnectionManager::State state, const QString &message);

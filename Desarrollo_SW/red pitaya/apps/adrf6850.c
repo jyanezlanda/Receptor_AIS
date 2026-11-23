@@ -243,6 +243,60 @@ static uint16_t adrf6850_gain_to_mv(int32_t gain_mdb, uint8_t polarity)
     return (uint16_t)mv;
 }
 
+#if ADRF6850_VGA_DOBLE_PENDIENTE
+/**
+ * @brief Two-slope version of the gain law: picks the polarity from the gain and returns VGAIN.
+ *
+ * Positive slope up to the break (30 dB, 750 mV) and negative slope above it, so VGAIN never exceeds 775 mV.
+ * *polarity is the one in use and is updated. It changes only when the gain goes more than
+ * ADRF6850_VGA_HYST_MDB past the break, so a gain near 30 dB cannot flip the slope back and forth.
+ */
+static uint16_t adrf6850_gain_to_mv_doble(int32_t gain_mdb, uint8_t *polarity)
+{
+    if (gain_mdb < 0)      { gain_mdb = 0; }
+    if (gain_mdb > 60000)  { gain_mdb = 60000; }
+
+    if ((*polarity == 0U) && (gain_mdb > (ADRF6850_VGA_BREAK_MDB + ADRF6850_VGA_HYST_MDB))) {
+        *polarity = 1U;
+    } else if ((*polarity != 0U) && (gain_mdb < (ADRF6850_VGA_BREAK_MDB - ADRF6850_VGA_HYST_MDB))) {
+        *polarity = 0U;
+    }
+    return adrf6850_gain_to_mv(gain_mdb, *polarity);
+}
+#endif
+
+/* ------------------------------------------------------------------------
+ * Lock detection
+ * ---------------------------------------------------------------------- */
+
+/**
+ * @brief Wait for the PLL to lock.
+ *
+ * Polls LDET (Pin 40) until it goes high. If no LDET GPIO is available the
+ * platform hook returns a negative value and a fixed 300 us delay is used
+ * instead: frequency settling to a 1 kHz error is 260 us typical.
+ */
+adrf6850_status_t adrf6850_wait_lock(uint32_t timeout_us)
+{
+    int ldet;
+    uint32_t elapsed = 0U;
+
+    ldet = adrf6850_hw_ldet_read();
+    if (ldet < 0) {
+        usleep(300U);
+        return ADRF6850_OK;
+    }
+
+    while (elapsed < timeout_us) {
+        if (adrf6850_hw_ldet_read() > 0) {
+            return ADRF6850_OK;
+        }
+        usleep(10U);
+        elapsed += 10U;
+    }
+
+    return ADRF6850_ERR_LOCK;
+}
 
 /* ------------------------------------------------------------------------
  * Initialization
@@ -333,6 +387,7 @@ adrf6850_status_t adrf6850_init(const adrf6850_config_t *cfg)
     uint32_t n_frac;
     uint32_t f_actual;
     uint16_t vgain_mv;
+    uint8_t  vga_pol;
 
     st = adrf6850_check_cfg(cfg, &pfd_hz, &bscdiv);
     if (st != ADRF6850_OK) {
@@ -349,10 +404,19 @@ adrf6850_status_t adrf6850_init(const adrf6850_config_t *cfg)
     g_dev.initialized = 0U;
     adrf6850_clear_verify_stats();
 
-    vgain_mv = adrf6850_gain_to_mv(g_cfg.gain_mdb, g_cfg.vga_polarity);
+#if ADRF6850_VGA_DOBLE_PENDIENTE
+    vga_pol  = 0U;                          /* CR30 = 0x00 below forces the positive slope */
+    vgain_mv = adrf6850_gain_to_mv_doble(g_cfg.gain_mdb, &vga_pol);
+
+    /* Park VGAIN at minimum gain (positive slope: 0 mV) before the VGA is powered up. */
+    adrf6850_hw_vgain_set_mv(adrf6850_gain_to_mv(0, 0U));
+#else
+    vga_pol  = g_cfg.vga_polarity;
+    vgain_mv = adrf6850_gain_to_mv(g_cfg.gain_mdb, vga_pol);
 
     /* Park VGAIN at minimum gain before the VGA is powered up. */
-    adrf6850_hw_vgain_set_mv(adrf6850_gain_to_mv(0, g_cfg.vga_polarity));
+    adrf6850_hw_vgain_set_mv(adrf6850_gain_to_mv(0, vga_pol));
+#endif
 
     adrf6850_spi_lock();
 
@@ -437,16 +501,17 @@ adrf6850_status_t adrf6850_init(const adrf6850_config_t *cfg)
     WR(ADRF6850_REG_CR0, (uint8_t)( n_frac & 0xFFU));
 
     /* 32. Wait for lock (260 us typical to a 1 kHz frequency error). */
-    usleep(g_cfg.lock_timeout_us);
+    st = adrf6850_wait_lock(g_cfg.lock_timeout_us);
 
     /* 33. Apply the operating gain and power up the VGA. */
     if (adrf6850_hw_vgain_set_mv(vgain_mv) != 0) {
         return ADRF6850_ERR_HW;
     }
     WR(ADRF6850_REG_CR30,
-       (uint8_t)((g_cfg.vga_polarity << 2) | 0x01U));
+       (uint8_t)((vga_pol << 2) | 0x01U));
 
     g_dev.initialized = 1U;
+    g_dev.vga_pol = vga_pol;
     g_dev.lo_hz = g_cfg.lo_hz;
     g_dev.lo_actual_hz = f_actual;
     g_dev.rfdiv = rfdiv;
@@ -585,7 +650,7 @@ adrf6850_status_t adrf6850_update(const adrf6850_params_t *p)
             g_dev.lo_hz = p->lo_hz;
         }
 
-        usleep(g_cfg.lock_timeout_us);
+        st = adrf6850_wait_lock(g_cfg.lock_timeout_us);
         if (st != ADRF6850_OK) {
             return st;
         }
@@ -594,11 +659,30 @@ adrf6850_status_t adrf6850_update(const adrf6850_params_t *p)
     /* ---- VGA gain (analog, applied last so the RF path is settled) -- */
     if ((p->mask & ADRF6850_UPD_GAIN) != 0U) {
         uint16_t mv;
+#if ADRF6850_VGA_DOBLE_PENDIENTE
+        uint8_t  pol;
+#endif
 
         if ((p->gain_mdb < 0) || (p->gain_mdb > 60000)) {
             return ADRF6850_ERR_PARAM;
         }
+#if ADRF6850_VGA_DOBLE_PENDIENTE
+        pol = g_dev.vga_pol;
+        mv  = adrf6850_gain_to_mv_doble(p->gain_mdb, &pol);
+        if (pol != g_dev.vga_pol) {
+            /* The slope flips at the break, where both slopes give the same gain: go to 750 mV, flip CR30, then go to
+             * the target. The gain moves from the old value to the new one through 30 dB. */
+            if (adrf6850_hw_vgain_set_mv(ADRF6850_VGA_BREAK_MV) != 0) {
+                return ADRF6850_ERR_HW;
+            }
+            g_dev.gain_mdb = ADRF6850_VGA_BREAK_MDB;
+            g_dev.vgain_mv = ADRF6850_VGA_BREAK_MV;
+            WR(ADRF6850_REG_CR30, (uint8_t)((pol << 2) | 0x01U));
+            g_dev.vga_pol = pol;
+        }
+#else
         mv = adrf6850_gain_to_mv(p->gain_mdb, g_cfg.vga_polarity);
+#endif
         if (adrf6850_hw_vgain_set_mv(mv) != 0) {
             return ADRF6850_ERR_HW;
         }

@@ -59,6 +59,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_connection, &ConnectionManager::stateChanged, this,
             &MainWindow::onConnectionStateChanged);
     connect(m_connection, &ConnectionManager::dataReceived, this, &MainWindow::onRawDataReceived);
+    connect(m_connection, &ConnectionManager::wordsReceived, m_decoder, &AisDecoder::feedWords);
+    connect(m_connection, &ConnectionManager::receiverStatus, this, &MainWindow::onReceiverStatus);
 
     // Decodificador AIS: cada buque decodificado entra al mismo modelo que usa el mapa
     connect(m_decoder, &AisDecoder::vesselDecoded, m_model, &VesselModel::upsert);
@@ -83,7 +85,9 @@ void MainWindow::createStatusBar()
     m_statusVessels = new QLabel(tr("Buques: 0"));
     m_statusAis = new QLabel;
     m_statusRx = new QLabel(tr("RX: 0 bytes"));
+    m_statusReceiver = new QLabel;
     statusBar()->addWidget(m_statusConnection, 1);
+    statusBar()->addPermanentWidget(m_statusReceiver);
     statusBar()->addPermanentWidget(m_statusVessels);
     statusBar()->addPermanentWidget(m_statusAis);
     statusBar()->addPermanentWidget(m_statusRx);
@@ -100,6 +104,8 @@ void MainWindow::onConnectionStateChanged(ConnectionManager::State state, const 
         text += QStringLiteral(" — %1").arg(m_connection->config().summary().toHtmlEscaped());
     m_statusConnection->setText(text);
     m_statusConnection->setToolTip(message);
+    if (state != ConnectionManager::State::Connected)
+        m_statusReceiver->clear();
 
     // Conexion nueva: se descarta cualquier linea o mensaje a medio armar
     if (state == ConnectionManager::State::Connecting || state == ConnectionManager::State::Listening)
@@ -114,13 +120,23 @@ void MainWindow::onRawDataReceived(const QByteArray &data)
     case ConnectionConfig::DataFormat::Nmea:
         m_decoder->feed(data);
         break;
-    case ConnectionConfig::DataFormat::DemodBits:
-        // TODO: decodificar los bits demodulados de la FPGA (NRZI, HDLC, CRC) y pasar el
-        //       payload a AisDecoder::decodePayload().
-        break;
+    case ConnectionConfig::DataFormat::Receiver:
+        break; // las palabras de la FIFO llegan por wordsReceived y las arma AisDecoder::feedWords
     case ConnectionConfig::DataFormat::Raw:
         break; // solo monitor
     }
+}
+
+void MainWindow::onReceiverStatus(quint32 level, bool squelchOpen, quint32 fifoWords)
+{
+    // El estado llega cada 20 ms: se muestra unas pocas veces por segundo.
+    if (m_receiverStatusTimer.isValid() && m_receiverStatusTimer.elapsed() < 250)
+        return;
+    m_receiverStatusTimer.start();
+    m_statusReceiver->setText(tr("Receptor: nivel %L1 · squelch %2")
+                                  .arg(level)
+                                  .arg(squelchOpen ? tr("abierto") : tr("cerrado")));
+    m_statusReceiver->setToolTip(tr("Palabras pendientes en la FIFO del receptor: %L1").arg(fifoWords));
 }
 
 void MainWindow::updateDecoderStatus()
@@ -131,11 +147,17 @@ void MainWindow::updateDecoderStatus()
     for (auto it = st.byType.cbegin(); it != st.byType.cend(); ++it)
         types << tr("tipo %1: %L2").arg(it.key()).arg(it.value());
     m_statusAis->setToolTip(tr("Sentencias válidas: %L1\nChecksum inválido: %L2\nMal formadas: %L3\n"
-                               "Tipos sin buque (ignorados): %L4\n%5")
+                               "Tipos sin buque (ignorados): %L4\n"
+                               "Receptor: bits %L5, tramas %L6, FCS malo %L7, descartadas por tipo o largo %L8, abortadas %L9\n%10")
                                 .arg(st.sentences)
                                 .arg(st.badChecksum)
                                 .arg(st.malformed)
                                 .arg(st.unsupported)
+                                .arg(st.rxBits)
+                                .arg(st.rxFrames)
+                                .arg(st.rxBadFcs)
+                                .arg(st.rxDiscarded)
+                                .arg(st.rxAborted)
                                 .arg(types.join(QLatin1Char('\n'))));
 }
 

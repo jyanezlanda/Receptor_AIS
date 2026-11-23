@@ -482,7 +482,7 @@
               <item row="6" column="1">
                <widget class="QLabel" name="lblEthAyuda">
                 <property name="text">
-                 <string>El servidor de la Red Pitaya publica los bits demodulados en el puerto TCP 1004 y recibe comandos en el 1003.</string>
+                 <string>Formato Receptor: se conecta al adc_server de la Red Pitaya (puerto TCP 1003) y lee la salida demodulada. El ADRF y el AGC los maneja adrf_server (puerto 1005).</string>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
@@ -710,7 +710,7 @@
                <widget class="QComboBox" name="cmbFormato">
                 <item>
                  <property name="text">
-                  <string>Bits demodulados (stream binario)</string>
+                  <string>Receptor Red Pitaya (FIFO demodulada, puerto 1003)</string>
                  </property>
                 </item>
                 <item>

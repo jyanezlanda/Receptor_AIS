@@ -4,10 +4,12 @@
 #include <QObject>
 #include <QSerialPort>
 #include <QTimer>
+#include <QVector>
 
 class QTcpServer;
 class QTcpSocket;
 class QUdpSocket;
+class ReceiverLink;
 
 /*
  * Parametros de la conexion con la Red Pitaya.
@@ -17,10 +19,10 @@ struct ConnectionConfig
     enum class Interface { Serial, Ethernet, Wifi };
     enum class Protocol { Tcp, Udp };
     enum class Role { Client, Server };
-    enum class DataFormat { DemodBits, Nmea, Raw };
+    enum class DataFormat { Receiver, Nmea, Raw }; // Receiver: la FIFO demodulada del adc_server de la Red Pitaya
 
     Interface interface = Interface::Ethernet;
-    DataFormat dataFormat = DataFormat::DemodBits;
+    DataFormat dataFormat = DataFormat::Receiver;
 
     // Serie
     QString serialPort;
@@ -32,7 +34,7 @@ struct ConnectionConfig
 
     // Red (Ethernet / WiFi)
     QString host = QStringLiteral("192.168.1.100");
-    quint16 port = 1004;
+    quint16 port = 1003;  // Receiver: puerto de datos del adc_server
     Protocol protocol = Protocol::Tcp;
     Role role = Role::Client;
     quint16 localPort = 1004;
@@ -74,12 +76,16 @@ public slots:
 signals:
     void stateChanged(ConnectionManager::State state, const QString &message);
     void dataReceived(const QByteArray &data);
+    // Formato Receiver: palabras de la FIFO (los bits van del MSB al LSB) y estado del receptor.
+    void wordsReceived(const QVector<quint32> &words);
+    void receiverStatus(quint32 level, bool squelchOpen, quint32 fifoWords);
 
 private:
     void openSerial();
     void openTcpClient();
     void openTcpServer();
     void openUdp();
+    void openReceiver();
     void attachTcpSocket(QTcpSocket *socket, bool fromServer);
     void handleData(const QByteArray &data);
     void fail(const QString &message);
@@ -95,6 +101,7 @@ private:
     QTcpSocket *m_tcp = nullptr;
     QTcpServer *m_server = nullptr;
     QUdpSocket *m_udp = nullptr;
+    ReceiverLink *m_receiver = nullptr;
 
     QTimer m_connectTimeout;
     QTimer m_reconnectTimer;
