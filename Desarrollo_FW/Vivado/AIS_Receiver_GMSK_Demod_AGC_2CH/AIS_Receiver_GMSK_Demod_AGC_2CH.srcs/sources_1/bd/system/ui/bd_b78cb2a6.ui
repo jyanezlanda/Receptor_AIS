@@ -1,0 +1,114 @@
+{
+   "ActiveEmotionalView":"Default View",
+   "Default View_ScaleFactor":"0.251748",
+   "Default View_TopLeft":"330,-222",
+   "ExpandedHierarchyInLayout":"",
+   "HierExpandStatus_comment_0":"false",
+   "HierExpandStatus_comment_1":"false",
+   "HierExpandStatus_comment_2":"false",
+   "HierExpandStatus_comment_3":"false",
+   "commentid":"",
+   "guistr":"# # String gsaved with Nlview 7.8.0 2024-04-26 e1825d835c VDI=44 GEI=38 GUI=JA:21.0
+#  -string -flagsOSRD
+preplace port s_axis_adc -pg 1 -lvl 0 -x 0 -y 760 -defaultsOSRD
+preplace port m_axis_a -pg 1 -lvl 16 -x 4620 -y 400 -defaultsOSRD
+preplace port m_axis_b -pg 1 -lvl 16 -x 4620 -y 660 -defaultsOSRD
+preplace port port-id_aclk -pg 1 -lvl 0 -x 0 -y 780 -defaultsOSRD
+preplace port port-id_aresetn_0 -pg 1 -lvl 0 -x 0 -y 620 -defaultsOSRD
+preplace portBus din -pg 1 -lvl 0 -x 0 -y 840 -defaultsOSRD
+preplace portBus dout -pg 1 -lvl 16 -x 4620 -y 180 -defaultsOSRD
+preplace inst slice_0 -pg 1 -lvl 13 -x 3730 -y 860 -defaultsOSRD
+preplace inst slice_1 -pg 1 -lvl 1 -x 140 -y 840 -defaultsOSRD
+preplace inst phase_0 -pg 1 -lvl 2 -x 390 -y 830 -defaultsOSRD
+preplace inst nco_0 -pg 1 -lvl 3 -x 690 -y 840 -defaultsOSRD
+preplace inst lfsr_0 -pg 1 -lvl 3 -x 690 -y 690 -defaultsOSRD
+preplace inst mult_0 -pg 1 -lvl 4 -x 1020 -y 790 -defaultsOSRD
+preplace inst bcast_0 -pg 1 -lvl 5 -x 1330 -y 810 -defaultsOSRD
+preplace inst cic_i -pg 1 -lvl 6 -x 1660 -y 820 -defaultsOSRD
+preplace inst fifo_a -pg 1 -lvl 15 -x 4460 -y 420 -defaultsOSRD
+preplace inst cic_q -pg 1 -lvl 6 -x 1660 -y 660 -defaultsOSRD
+preplace inst fir_ia -pg 1 -lvl 12 -x 3430 -y 950 -defaultsOSRD
+preplace inst GMSK_Demod_a -pg 1 -lvl 14 -x 4090 -y 470 -defaultsOSRD
+preplace inst fir_qa -pg 1 -lvl 12 -x 3430 -y 680 -defaultsOSRD
+preplace inst mux_out_sel_slice -pg 1 -lvl 12 -x 3430 -y 800 -defaultsOSRD
+preplace inst gmsk_iq_pack_fir_a -pg 1 -lvl 13 -x 3730 -y 690 -defaultsOSRD
+preplace inst xlconcat_a -pg 1 -lvl 14 -x 4090 -y 170 -defaultsOSRD
+preplace inst xlconstant_0 -pg 1 -lvl 13 -x 3730 -y 960 -defaultsOSRD
+preplace inst fir_ib -pg 1 -lvl 12 -x 3430 -y 380 -defaultsOSRD
+preplace inst fir_qb -pg 1 -lvl 12 -x 3430 -y 540 -defaultsOSRD
+preplace inst gmsk_iq_pack_fir_b -pg 1 -lvl 13 -x 3730 -y 500 -defaultsOSRD
+preplace inst GMSK_Demod_b -pg 1 -lvl 14 -x 4090 -y 730 -defaultsOSRD
+preplace inst fifo_b -pg 1 -lvl 15 -x 4460 -y 680 -defaultsOSRD
+preplace inst xlconcat_b -pg 1 -lvl 14 -x 4090 -y 1040 -defaultsOSRD
+preplace inst xlconcat_ab -pg 1 -lvl 15 -x 4460 -y 180 -defaultsOSRD
+preplace inst cordic_b -pg 1 -lvl 9 -x 2520 -y 390 -defaultsOSRD
+preplace inst rot_phase_gen_0 -pg 1 -lvl 8 -x 2220 -y 390 -defaultsOSRD
+preplace inst bcast_b -pg 1 -lvl 10 -x 2850 -y 410 -defaultsOSRD
+preplace inst xlconstant_pinc_rot -pg 1 -lvl 6 -x 1660 -y 410 -defaultsOSRD
+preplace inst gmsk_axis_broadcast2_q -pg 1 -lvl 7 -x 1950 -y 670 -defaultsOSRD
+preplace inst gmsk_axis_broadcast2_i -pg 1 -lvl 7 -x 1950 -y 830 -defaultsOSRD
+preplace inst gmsk_iq_pack_rot -pg 1 -lvl 8 -x 2220 -y 570 -defaultsOSRD
+preplace inst gain_ib -pg 1 -lvl 11 -x 3140 -y 360 -defaultsOSRD
+preplace inst gain_qb -pg 1 -lvl 11 -x 3140 -y 520 -defaultsOSRD
+preplace netloc GMSK_Demod1_activo_confirmado 1 13 2 3940 890 4250
+preplace netloc GMSK_Demod1_activo_ext 1 13 2 3940 1190 4260
+preplace netloc GMSK_Demod1_dispersion_dbg 1 13 2 3950 1180 4280
+preplace netloc GMSK_Demod1_nivel 1 13 2 3930 880 4270
+preplace netloc GMSK_Demod1_pico_cont 1 13 2 3930 1200 4240
+preplace netloc GMSK_Demod1_piso_ruido_dbg 1 13 2 3910 850 4230
+preplace netloc GMSK_Demod1_rafaga_info 1 13 2 3960 900 4220
+preplace netloc GMSK_Demod_activo_confirmado 1 13 2 3940 20 4250
+preplace netloc GMSK_Demod_activo_ext 1 13 2 3940 320 4240
+preplace netloc GMSK_Demod_dispersion_dbg 1 13 2 3960 310 4220
+preplace netloc GMSK_Demod_nivel 1 13 2 3860 10 4230
+preplace netloc GMSK_Demod_pico_cont 1 13 2 3930 330 4260
+preplace netloc GMSK_Demod_piso_ruido_dbg 1 13 2 3960 30 4270
+preplace netloc GMSK_Demod_rafaga_info 1 13 2 3920 340 4280
+preplace netloc aclk_1 1 0 15 NJ 780 260 910 530 910 870 880 1180 890 1510 580 1830 580 2070 470 2350 470 2690 490 3020 670 3280 460 3590 600 3890 600 4320
+preplace netloc aresetn_0_1 1 0 14 NJ 620 NJ 620 520 620 NJ 620 1170 620 1500 570 1810 590 2100 480 NJ 480 2700 500 3000 440 3270 870 3600 590 3900
+preplace netloc fifo_0_read_count 1 13 3 3910 590 4290J 340 4600
+preplace netloc fifo_1_read_count 1 13 3 3920 870 NJ 870 4600
+preplace netloc hub_0_cfg_data 1 0 13 20 900 NJ 900 540J 770 840J 700 NJ 700 1480J 740 1820J 750 NJ 750 NJ 750 NJ 750 NJ 750 3260 860 NJ
+preplace netloc sel_out_1 1 12 2 NJ 800 3880
+preplace netloc slice_0_dout 1 13 2 NJ 860 4310
+preplace netloc slice_1_dout 1 1 1 NJ 840
+preplace netloc xlconcat_0_dout 1 14 1 N 170
+preplace netloc xlconcat_1_dout 1 14 1 4300 190n
+preplace netloc xlconcat_2_dout 1 15 1 NJ 180
+preplace netloc xlconstant_0_dout 1 13 1 3860 210n
+preplace netloc xlconstant_pinc_rot_dout 1 6 2 NJ 410 NJ
+preplace netloc Conn1 1 15 1 NJ 400
+preplace netloc Conn2 1 0 4 NJ 760 NJ 760 NJ 760 NJ
+preplace netloc Conn3 1 15 1 NJ 660
+preplace netloc GMSK_Demod1_m_axis_salida 1 14 1 N 660
+preplace netloc GMSK_Demod_m_axis1 1 14 1 N 400
+preplace netloc bcast_0_M00_AXIS 1 5 1 N 800
+preplace netloc bcast_0_M01_AXIS 1 5 1 1490 640n
+preplace netloc cic_0_M_AXIS_DATA 1 6 1 N 810
+preplace netloc cic_1_M_AXIS_DATA 1 6 1 N 650
+preplace netloc cordic_0_M_AXIS_DOUT 1 9 1 N 390
+preplace netloc dds_0_M_AXIS_DATA 1 3 1 860 780n
+preplace netloc fir_0_M_AXIS_DATA 1 12 1 3610 660n
+preplace netloc fir_1_M_AXIS_DATA 1 12 1 N 680
+preplace netloc fir_2_M_AXIS_DATA 1 12 1 3600 380n
+preplace netloc fir_3_M_AXIS_DATA 1 12 1 3580 490n
+preplace netloc gmsk_axis_broadcast2_2_m0_axis 1 7 5 NJ 660 NJ 660 NJ 660 NJ 660 N
+preplace netloc gmsk_axis_broadcast2_2_m0_axis1 1 7 5 2070 930 NJ 930 NJ 930 NJ 930 NJ
+preplace netloc gmsk_axis_broadcast2_i_m1_axis 1 7 1 2080 540n
+preplace netloc gmsk_axis_broadcast2_q_m1_axis 1 7 1 2090 560n
+preplace netloc gmsk_iq_pack_fir1_m_axis 1 13 1 3870 500n
+preplace netloc gmsk_iq_pack_fir_m_axis 1 13 1 3850 440n
+preplace netloc gmsk_iq_pack_rot_0_m_axis 1 8 1 2340 370n
+preplace netloc lfsr_0_m_axis 1 3 1 850 690n
+preplace netloc mult_0_M_AXIS_DOUT 1 4 1 N 790
+preplace netloc phase_0_m_axis 1 2 1 N 830
+preplace netloc rot_phase_gen_0_m_axis 1 8 1 N 390
+preplace netloc bcast_b_M01_AXIS 1 10 1 3010 420n
+preplace netloc gmsk_axis_gain_1p625_q_m_axis 1 11 1 N 520
+preplace netloc bcast_b_M00_AXIS 1 10 1 3010 340n
+preplace netloc gmsk_axis_gain_1p625_i_m_axis 1 11 1 N 360
+levelinfo -pg 1 0 140 390 690 1020 1330 1660 1950 2220 2520 2850 3140 3430 3730 4090 4460 4620
+pagesize -pg 1 -db -bbox -sgen -120 0 4740 1210
+"
+}
+0

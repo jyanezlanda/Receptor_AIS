@@ -1,0 +1,55 @@
+{
+   "ActiveEmotionalView":"Default View",
+   "Default View_ScaleFactor":"0.512195",
+   "Default View_TopLeft":"-496,-8",
+   "ExpandedHierarchyInLayout":"",
+   "guistr":"# # String gsaved with Nlview 7.8.0 2024-04-26 e1825d835c VDI=44 GEI=38 GUI=JA:21.0
+#  -string -flagsOSRD
+preplace port m_axis_salida -pg 1 -lvl 5 -x 1330 -y 880 -defaultsOSRD
+preplace port s_axis -pg 1 -lvl 0 -x 0 -y 490 -defaultsOSRD
+preplace port port-id_clk_0 -pg 1 -lvl 0 -x 0 -y 510 -defaultsOSRD
+preplace port port-id_aresetn_0 -pg 1 -lvl 0 -x 0 -y 530 -defaultsOSRD
+preplace port port-id_sel_out -pg 1 -lvl 0 -x 0 -y 940 -defaultsOSRD
+preplace port port-id_activo_confirmado -pg 1 -lvl 5 -x 1330 -y 130 -defaultsOSRD
+preplace port port-id_activo_ext -pg 1 -lvl 5 -x 1330 -y 370 -defaultsOSRD
+preplace portBus nivel -pg 1 -lvl 5 -x 1330 -y 90 -defaultsOSRD
+preplace portBus piso_ruido_dbg -pg 1 -lvl 5 -x 1330 -y 330 -defaultsOSRD
+preplace portBus dispersion_dbg -pg 1 -lvl 5 -x 1330 -y 310 -defaultsOSRD
+preplace portBus pico_cont -pg 1 -lvl 5 -x 1330 -y 210 -defaultsOSRD
+preplace portBus rafaga_info -pg 1 -lvl 5 -x 1330 -y 230 -defaultsOSRD
+preplace inst gmsk_discriminador -pg 1 -lvl 2 -x 440 -y 520 -defaultsOSRD
+preplace inst gmsk_squelch_calib -pg 1 -lvl 3 -x 800 -y 330 -defaultsOSRD
+preplace inst gmsk_salida -pg 1 -lvl 2 -x 440 -y 700 -defaultsOSRD
+preplace inst gmsk_simbolo -pg 1 -lvl 3 -x 800 -y 530 -defaultsOSRD
+preplace inst gmsk_iq_unpack32_fir -pg 1 -lvl 2 -x 440 -y 860 -defaultsOSRD
+preplace inst gmsk_axis_broadcast2_fir -pg 1 -lvl 1 -x 150 -y 510 -defaultsOSRD
+preplace inst gmsk_axis_mux2_out -pg 1 -lvl 3 -x 800 -y 880 -defaultsOSRD
+preplace inst gmsk_nivel_senal_0 -pg 1 -lvl 3 -x 800 -y 90 -defaultsOSRD
+preplace inst gmsk_pico_rafaga_0 -pg 1 -lvl 4 -x 1160 -y 230 -defaultsOSRD
+preplace netloc aresetn_0_1 1 0 4 20 590 280 780 620 210 N
+preplace netloc aresetn_1 1 2 2 630 420 970
+preplace netloc clk_0_1 1 0 4 30 600 290 590 610 190 N
+preplace netloc gmsk_discriminador_dout 1 2 1 590 70n
+preplace netloc gmsk_discriminador_m2_axis_tvalid 1 2 2 600 230 N
+preplace netloc gmsk_nivel_senal_0_nivel 1 3 2 1010 90 NJ
+preplace netloc gmsk_pico_rafaga_0_pico_cont 1 4 1 NJ 210
+preplace netloc gmsk_pico_rafaga_0_rafaga_info 1 4 1 NJ 230
+preplace netloc gmsk_simbolo_bit_crudo_tdata 1 1 3 300 600 580J 610 980
+preplace netloc gmsk_simbolo_bit_crudo_tvalid 1 1 3 310 610 570J 620 970
+preplace netloc gmsk_squelch_calib_activo_confirmado 1 3 2 1020 130 NJ
+preplace netloc gmsk_squelch_calib_activo_ext 1 3 2 NJ 370 NJ
+preplace netloc gmsk_squelch_calib_dispersion_dbg 1 3 2 NJ 350 1300J
+preplace netloc gmsk_squelch_calib_piso_ruido_dbg 1 3 2 NJ 330 NJ
+preplace netloc sel_1 1 0 3 NJ 940 NJ 940 610J
+preplace netloc Conn2 1 0 1 NJ 490
+preplace netloc gmsk_axis_broadcast2_0_m1_axis 1 1 1 270 520n
+preplace netloc gmsk_axis_broadcast2_1_m0_axis1 1 1 1 N 500
+preplace netloc gmsk_axis_mux2_out_m_axis 1 3 2 NJ 880 NJ
+preplace netloc gmsk_discriminador_m_axis_soft 1 2 1 N 500
+preplace netloc gmsk_iq_unpack32_fir_m_axis 1 2 1 N 860
+preplace netloc gmsk_squelch_calib_m_axis 1 2 1 570 700n
+levelinfo -pg 1 0 150 440 800 1160 1330
+pagesize -pg 1 -db -bbox -sgen -120 -10 1530 980
+"
+}
+
