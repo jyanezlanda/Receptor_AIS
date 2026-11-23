@@ -5,11 +5,14 @@
 #include "connectionpage.h"
 #include "demosimulator.h"
 #include "mappage.h"
+#include "receiverpage.h"
+#include "sessionlogger.h"
 #include "sshpage.h"
 #include "vesselmodel.h"
 
 #include <QApplication>
 #include <QCloseEvent>
+#include <QDir>
 #include <QLabel>
 #include <QMessageBox>
 #include <QSettings>
@@ -28,6 +31,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->mapPage->setModel(m_model);
     ui->connectionPage->setManager(m_connection);
+
+    // Pestana del receptor: estado, AGC y registro CSV
+    m_receiverPage = new ReceiverPage;
+    ui->tabs->insertTab(ui->tabs->indexOf(ui->sshPage), m_receiverPage, tr("Receptor"));
+    m_adrf = new AdrfLink(this);
+    m_logger = new SessionLogger(this);
 
     // Menus (definidos en mainwindow.ui)
     connect(ui->actionSalir, &QAction::triggered, this, &QWidget::close);
@@ -61,6 +70,20 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_connection, &ConnectionManager::dataReceived, this, &MainWindow::onRawDataReceived);
     connect(m_connection, &ConnectionManager::wordsReceived, m_decoder, &AisDecoder::feedWords);
     connect(m_connection, &ConnectionManager::receiverStatus, this, &MainWindow::onReceiverStatus);
+    connect(m_connection, &ConnectionManager::receiverStatus, m_receiverPage, &ReceiverPage::setReceiverStatus);
+
+    // Estado del AGC (servidor del ADRF) y registro CSV
+    connect(m_adrf, &AdrfLink::statusUpdated, m_receiverPage, &ReceiverPage::setAgcStatus);
+    connect(m_adrf, &AdrfLink::statusUpdated, this, &MainWindow::onAgcStatus);
+    connect(m_adrf, &AdrfLink::linkChanged, m_receiverPage, &ReceiverPage::setAgcLink);
+    connect(m_adrf, &AdrfLink::linkChanged, this, &MainWindow::onAgcLink);
+    connect(m_receiverPage, &ReceiverPage::controlPortChanged, this, [this](quint16 port) {
+        if (m_adrf->isOpen())
+            m_adrf->open(m_connection->config().host, port);
+    });
+    connect(m_decoder, &AisDecoder::vesselDecoded, m_logger, &SessionLogger::logMessage);
+    connect(m_receiverPage, &ReceiverPage::statusRow, m_logger, &SessionLogger::logStatus);
+    connect(m_receiverPage, &ReceiverPage::loggingRequested, this, &MainWindow::onLoggingRequested);
 
     // Decodificador AIS: cada buque decodificado entra al mismo modelo que usa el mapa
     connect(m_decoder, &AisDecoder::vesselDecoded, m_model, &VesselModel::upsert);
@@ -86,8 +109,10 @@ void MainWindow::createStatusBar()
     m_statusAis = new QLabel;
     m_statusRx = new QLabel(tr("RX: 0 bytes"));
     m_statusReceiver = new QLabel;
+    m_statusAgc = new QLabel;
     statusBar()->addWidget(m_statusConnection, 1);
     statusBar()->addPermanentWidget(m_statusReceiver);
+    statusBar()->addPermanentWidget(m_statusAgc);
     statusBar()->addPermanentWidget(m_statusVessels);
     statusBar()->addPermanentWidget(m_statusAis);
     statusBar()->addPermanentWidget(m_statusRx);
@@ -106,6 +131,18 @@ void MainWindow::onConnectionStateChanged(ConnectionManager::State state, const 
     m_statusConnection->setToolTip(message);
     if (state != ConnectionManager::State::Connected)
         m_statusReceiver->clear();
+
+    // El estado del AGC se consulta al servidor del ADRF mientras el receptor esta conectado
+    const bool receiverUp = state == ConnectionManager::State::Connected
+                            && m_connection->config().dataFormat == ConnectionConfig::DataFormat::Receiver;
+    m_receiverPage->setReceiverActive(receiverUp);
+    if (receiverUp) {
+        m_adrf->open(m_connection->config().host, m_receiverPage->controlPort());
+    } else {
+        m_adrf->close();
+        m_statusAgc->clear();
+        m_statusAgc->setToolTip(QString());
+    }
 
     // Conexion nueva: se descarta cualquier linea o mensaje a medio armar
     if (state == ConnectionManager::State::Connecting || state == ConnectionManager::State::Listening)
@@ -139,9 +176,50 @@ void MainWindow::onReceiverStatus(quint32 level, bool squelchOpen, quint32 fifoW
     m_statusReceiver->setToolTip(tr("Palabras pendientes en la FIFO del receptor: %L1").arg(fifoWords));
 }
 
+void MainWindow::onAgcStatus(const AgcStatus &s)
+{
+    if (!s.available) {
+        m_statusAgc->setText(tr("AGC: no disponible"));
+        return;
+    }
+    m_statusAgc->setText(tr("AGC: %1 dB%2").arg(s.gainDb, 0, 'f', 1).arg(s.active ? QString() : tr(" (inactivo)")));
+    m_statusAgc->setToolTip(tr("Pico de la última ráfaga: %L1 (objetivo %L2)\nRáfagas procesadas: %L3 · cambios de ganancia: %L4 · protecciones: %L5")
+                                .arg(s.lastPeak)
+                                .arg(s.target, 0, 'f', 0)
+                                .arg(s.bursts)
+                                .arg(s.changes)
+                                .arg(s.protections));
+}
+
+void MainWindow::onAgcLink(bool linked, const QString &message)
+{
+    if (linked || m_connection->state() != ConnectionManager::State::Connected)
+        return;
+    m_statusAgc->setText(tr("AGC: sin enlace"));
+    m_statusAgc->setToolTip(message);
+}
+
+void MainWindow::onLoggingRequested(bool on, const QString &folder)
+{
+    if (!on) {
+        m_logger->stop();
+        m_receiverPage->setLoggerResult(false, tr("Registro detenido"));
+        return;
+    }
+    QString error;
+    if (!m_logger->start(folder, &error)) {
+        m_receiverPage->setLoggerResult(false, error);
+        return;
+    }
+    m_receiverPage->setLoggerResult(true, tr("Registrando en %1 y %2")
+                                              .arg(QDir::toNativeSeparators(m_logger->messagesPath()),
+                                                   QDir::toNativeSeparators(m_logger->statusPath())));
+}
+
 void MainWindow::updateDecoderStatus()
 {
     const AisDecoder::Stats &st = m_decoder->stats();
+    m_receiverPage->setDecoderStats(st);
     m_statusAis->setText(tr("AIS: %L1 mensajes").arg(st.messages));
     QStringList types;
     for (auto it = st.byType.cbegin(); it != st.byType.cend(); ++it)
@@ -168,6 +246,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
     s.setValue(QStringLiteral("window/mapSplitter"), ui->mapPage->saveState());
     ui->connectionPage->saveSettings();
     ui->sshPage->saveSettings();
+    m_receiverPage->saveSettings();
+    m_logger->stop();
+    m_adrf->close();
     m_connection->close();
     event->accept();
 }

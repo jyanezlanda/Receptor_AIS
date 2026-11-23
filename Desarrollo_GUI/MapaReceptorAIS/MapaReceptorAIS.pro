@@ -7,6 +7,7 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    adrflink.cpp \
     aisdecoder.cpp \
     aistypes.cpp \
     connectionmanager.cpp \
@@ -17,6 +18,8 @@ SOURCES += \
     mappage.cpp \
     mapwidget.cpp \
     receiverlink.cpp \
+    receiverpage.cpp \
+    sessionlogger.cpp \
     sshpage.cpp \
     sshsession.cpp \
     vesseldetailpanel.cpp \
@@ -24,6 +27,7 @@ SOURCES += \
     ais_frame/ais_frame.c
 
 HEADERS += \
+    adrflink.h \
     aisdecoder.h \
     aistypes.h \
     connectionmanager.h \
@@ -33,11 +37,16 @@ HEADERS += \
     mappage.h \
     mapwidget.h \
     receiverlink.h \
+    receiverpage.h \
+    sessionlogger.h \
     sshpage.h \
     sshsession.h \
     vesseldetailpanel.h \
     vesselmodel.h \
-    ais_frame/ais_frame.h
+    ais_frame/ais_frame.h \
+    adrflink.h \
+    receiverpage.h \
+    sessionlogger.h
 
 FORMS += \
     connectionpage.ui \

@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "adrflink.h"
 #include "connectionmanager.h"
 
 #include <QElapsedTimer>
@@ -15,6 +16,8 @@ QT_END_NAMESPACE
 class AisDecoder;
 class DemoSimulator;
 class QLabel;
+class ReceiverPage;
+class SessionLogger;
 class VesselModel;
 
 /*
@@ -38,6 +41,9 @@ private:
     void onRawDataReceived(const QByteArray &data);
     void updateDecoderStatus();
     void onReceiverStatus(quint32 level, bool squelchOpen, quint32 fifoWords);
+    void onAgcStatus(const AgcStatus &status);
+    void onAgcLink(bool linked, const QString &message);
+    void onLoggingRequested(bool on, const QString &folder);
 
     Ui::MainWindow *ui;
 
@@ -45,12 +51,16 @@ private:
     ConnectionManager *m_connection = nullptr;
     DemoSimulator *m_simulator = nullptr;
     AisDecoder *m_decoder = nullptr;
+    AdrfLink *m_adrf = nullptr;
+    ReceiverPage *m_receiverPage = nullptr;
+    SessionLogger *m_logger = nullptr;
 
     QLabel *m_statusConnection = nullptr;
     QLabel *m_statusVessels = nullptr;
     QLabel *m_statusAis = nullptr;
     QLabel *m_statusRx = nullptr;
     QLabel *m_statusReceiver = nullptr;
+    QLabel *m_statusAgc = nullptr;
     QElapsedTimer m_receiverStatusTimer;
 };
 

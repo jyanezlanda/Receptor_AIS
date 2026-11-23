@@ -2,7 +2,7 @@
  * adrf_server.c -- Servidor TCP del ADRF6850 para la Red Pitaya, para el bitstream en que el DAC se maneja por registro.
  *
  * Compilar:  gcc -O2 -Wall adrf_server.c adrf6850.c adrf6850_conf.c agc.c -lm -pthread -o adrf_server
- * Usar:      ./adrf_server_dacreg [-c archivo.conf] [-a] [-d [-F mV] [-O mV]] [-g agc.conf | -n] [-p puerto] [-i pausa_us]
+ * Usar:      ./adrf_server [-c archivo.conf] [-a] [-d [-F mV] [-O mV]] [-g agc.conf | -n] [-p puerto] [-i pausa_us]
  *
  *   -p  puerto TCP (1005 por defecto; el servidor de datos usa 1003)
  *   -c  archivo de configuracion: se lee y valida al arrancar. Sin -c solo se puede inicializar con CMD_ADRF_INIT_CFG.
@@ -907,8 +907,8 @@ static void iniciar_al_arrancar(void)
         return;
     }
     st = adrf6850_get_state();
-    printf("ADRF: init hecho: LO = %.6f MHz, VGAIN = %u mV en J2 (se aplica a mano)\n",
-           st->lo_actual_hz / 1e6, (unsigned)st->vgain_mv);
+    printf("ADRF: init hecho: LO = %.6f MHz, VGAIN = %u mV en J2 (%s)\n",
+           st->lo_actual_hz / 1e6, (unsigned)st->vgain_mv, g_vgain_reg != NULL ? "aplicado por el DAC" : "se aplica a mano");
 }
 
 /* Un cliente que desaparece sin cerrar (se cae la red) no debe dejar al servidor colgado para siempre. */
