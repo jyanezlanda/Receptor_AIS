@@ -213,12 +213,20 @@ void ConnectionManager::openReceiver()
         return;
     }
     m_receiver = new ReceiverLink(this);
+    m_receiverChannels = 1;
+    connect(m_receiver, &ReceiverLink::channelsDetected, this, [this](int count) {
+        m_receiverChannels = count;
+        emit receiverChannels(count);
+    });
     connect(m_receiver, &ReceiverLink::connected, this, [this] {
         m_connectTimeout.stop();
-        setState(State::Connected, tr("Receptor en marcha en %1:%2").arg(m_config.host).arg(m_config.port));
+        setState(State::Connected, tr("Receptor en marcha en %1:%2 (%3)")
+                                       .arg(m_config.host)
+                                       .arg(m_config.port)
+                                       .arg(m_receiverChannels > 1 ? tr("canales A y B") : tr("un solo canal: A")));
     });
     connect(m_receiver, &ReceiverLink::failed, this, [this](const QString &message) { fail(message); });
-    connect(m_receiver, &ReceiverLink::wordsReceived, this, [this](const QVector<quint32> &words) {
+    connect(m_receiver, &ReceiverLink::wordsReceived, this, [this](int channel, const QVector<quint32> &words) {
         // Para el monitor: los bits como bytes, en el orden en que llegan.
         QByteArray raw;
         raw.reserve(words.size() * 4);
@@ -226,8 +234,9 @@ void ConnectionManager::openReceiver()
             for (int shift = 24; shift >= 0; shift -= 8)
                 raw.append(char((w >> shift) & 0xFF));
         m_rxBytes += quint64(raw.size());
-        emit wordsReceived(words);
-        emit dataReceived(raw);
+        emit wordsReceived(channel, words);
+        if (channel == 0)
+            emit dataReceived(raw); // el monitor muestra el canal A; el contador de bytes suma los dos
     });
     connect(m_receiver, &ReceiverLink::statusUpdated, this, &ConnectionManager::receiverStatus);
     setState(State::Connecting, tr("Conectando con %1:%2…").arg(m_config.host).arg(m_config.port));

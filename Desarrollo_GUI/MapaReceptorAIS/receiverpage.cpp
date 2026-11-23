@@ -151,22 +151,6 @@ ReceiverPage::ReceiverPage(QWidget *parent)
         return l;
     };
 
-    auto *rx = new QGroupBox(tr("Receptor (adc_server)"));
-    auto *rxForm = new QFormLayout(rx);
-    m_level = new QProgressBar;
-    m_level->setRange(0, kLevelMax);
-    m_level->setFormat(QStringLiteral("%v"));
-    rxForm->addRow(tr("Nivel:"), m_level);
-    rxForm->addRow(tr("Pico del último segundo:"), m_levelPeak = label());
-    rxForm->addRow(tr("Squelch:"), m_squelch = label());
-    rxForm->addRow(tr("Palabras en la FIFO:"), m_fifo = label());
-    rxForm->addRow(tr("Ráfagas por segundo:"), m_burstRate = label());
-    rxForm->addRow(tr("Mensajes AIS:"), m_messages = label());
-    rxForm->addRow(tr("Tramas correctas:"), m_frames = label());
-    rxForm->addRow(tr("FCS incorrecto:"), m_badFcs = label());
-    rxForm->addRow(tr("Descartadas (tipo o largo):"), m_discarded = label());
-    rxForm->addRow(tr("Abortadas:"), m_aborted = label());
-
     auto *agc = new QGroupBox(tr("AGC (adrf_server)"));
     auto *agcForm = new QFormLayout(agc);
     agcForm->addRow(tr("Estado:"), m_agcState = label());
@@ -185,7 +169,8 @@ ReceiverPage::ReceiverPage(QWidget *parent)
     m_lastPort = quint16(m_port->value());
 
     auto *top = new QHBoxLayout;
-    top->addWidget(rx, 1);
+    top->addWidget(makeChannelBox(m_ch[0], tr("Canal A (161,975 MHz)")), 1);
+    top->addWidget(makeChannelBox(m_ch[1], tr("Canal B (162,025 MHz)")), 1);
     top->addWidget(agc, 1);
 
     m_plot = new TracePlot;
@@ -253,12 +238,40 @@ QString ReceiverPage::count(quint64 value)
     return QLocale().toString(value);
 }
 
+QGroupBox *ReceiverPage::makeChannelBox(Channel &c, const QString &title)
+{
+    auto label = [] {
+        auto *l = new QLabel(QStringLiteral("—"));
+        l->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        return l;
+    };
+    c.box = new QGroupBox(title);
+    auto *form = new QFormLayout(c.box);
+    c.level = new QProgressBar;
+    c.level->setRange(0, kLevelMax);
+    c.level->setFormat(QStringLiteral("%v"));
+    form->addRow(tr("Nivel:"), c.level);
+    form->addRow(tr("Pico del último segundo:"), c.levelPeak = label());
+    form->addRow(tr("Squelch:"), c.squelch = label());
+    form->addRow(tr("Palabras en la FIFO:"), c.fifo = label());
+    form->addRow(tr("Ráfagas por segundo:"), c.burstRate = label());
+    form->addRow(tr("Mensajes AIS:"), c.messages = label());
+    form->addRow(tr("Tramas correctas:"), c.frames = label());
+    form->addRow(tr("FCS incorrecto:"), c.badFcs = label());
+    form->addRow(tr("Descartadas (tipo o largo):"), c.discarded = label());
+    form->addRow(tr("Abortadas:"), c.aborted = label());
+    return c.box;
+}
+
 void ReceiverPage::resetDisplay()
 {
-    for (QLabel *l : {m_levelPeak, m_squelch, m_fifo, m_burstRate, m_messages, m_frames, m_badFcs, m_discarded, m_aborted, m_agcState, m_gain,
-                      m_target, m_lastPeak, m_agcBursts, m_agcChanges, m_agcProtections, m_agcErrors})
+    for (Channel &c : m_ch) {
+        for (QLabel *l : {c.levelPeak, c.squelch, c.fifo, c.burstRate, c.messages, c.frames, c.badFcs, c.discarded, c.aborted})
+            l->setText(QStringLiteral("—"));
+        c.level->setValue(0);
+    }
+    for (QLabel *l : {m_agcState, m_gain, m_target, m_lastPeak, m_agcBursts, m_agcChanges, m_agcProtections, m_agcErrors})
         l->setText(QStringLiteral("—"));
-    m_level->setValue(0);
     m_plot->clear();
     m_agc = AgcStatus();
     m_agcLinked = false;
@@ -269,30 +282,43 @@ void ReceiverPage::setReceiverActive(bool active)
     if (m_active == active)
         return;
     m_active = active;
-    m_edges = 0;
-    m_peakSecond = 0;
-    m_squelchWas = false;
-    m_burstsPerSecond = 0.0;
+    for (Channel &c : m_ch) {
+        c.edges = 0;
+        c.peakSecond = 0;
+        c.squelchWas = false;
+        c.burstsPerSecond = 0.0;
+    }
     m_rateTimer.restart();
     if (!active)
         resetDisplay();
 }
 
-void ReceiverPage::setReceiverStatus(quint32 level, bool squelchOpen, quint32 fifoWords)
+void ReceiverPage::setChannelCount(int count)
 {
-    if (squelchOpen && !m_squelchWas)
-        ++m_edges;
-    m_squelchWas = squelchOpen;
-    m_peakSecond = qMax(m_peakSecond, level);
-    m_levelNow = level;
-    m_squelchOpen = squelchOpen;
-    m_fifoWords = fifoWords;
-    if (m_displayTimer.isValid() && m_displayTimer.elapsed() < kDisplayMs)
+    m_channelCount = qBound(1, count, 2);
+    const bool hasB = m_channelCount > 1;
+    m_ch[1].box->setEnabled(hasB);
+    m_ch[1].box->setTitle(hasB ? tr("Canal B (162,025 MHz)") : tr("Canal B (162,025 MHz): el servidor es de un solo canal"));
+}
+
+void ReceiverPage::setReceiverStatus(int channel, quint32 level, bool squelchOpen, quint32 fifoWords)
+{
+    if (channel < 0 || channel > 1)
         return;
-    m_displayTimer.start();
-    m_level->setValue(int(qMin<quint32>(level, kLevelMax)));
-    m_squelch->setText(squelchOpen ? coloredText(tr("abierto"), "#27ae60") : tr("cerrado"));
-    m_fifo->setText(count(fifoWords));
+    Channel &c = m_ch[channel];
+    if (squelchOpen && !c.squelchWas)
+        ++c.edges;
+    c.squelchWas = squelchOpen;
+    c.peakSecond = qMax(c.peakSecond, level);
+    c.levelNow = level;
+    c.squelchOpen = squelchOpen;
+    c.fifoWords = fifoWords;
+    if (c.displayTimer.isValid() && c.displayTimer.elapsed() < kDisplayMs)
+        return;
+    c.displayTimer.start();
+    c.level->setValue(int(qMin<quint32>(level, kLevelMax)));
+    c.squelch->setText(squelchOpen ? coloredText(tr("abierto"), "#27ae60") : tr("cerrado"));
+    c.fifo->setText(count(fifoWords));
 }
 
 void ReceiverPage::setAgcLink(bool linked, const QString &message)
@@ -330,9 +356,10 @@ void ReceiverPage::setAgcStatus(const AgcStatus &s)
     m_plot->add(s.gainDb, s.lastPeak);
 }
 
-void ReceiverPage::setDecoderStats(const AisDecoder::Stats &stats)
+void ReceiverPage::setDecoderStats(int channel, const AisDecoder::Stats &stats)
 {
-    m_stats = stats;
+    if (channel >= 0 && channel <= 1)
+        m_ch[channel].stats = stats;
 }
 
 void ReceiverPage::setLoggerResult(bool active, const QString &text)
@@ -349,37 +376,41 @@ void ReceiverPage::onSecond()
     if (!m_active)
         return;
     const double seconds = qMax(0.001, m_rateTimer.restart() / 1000.0);
-    m_burstsPerSecond = m_edges / seconds;
-    m_edges = 0;
-    const quint32 peak = m_peakSecond;
-    m_peakSecond = 0;
-    m_levelPeak->setText(count(peak));
-    m_burstRate->setText(QString::number(m_burstsPerSecond, 'f', 1));
-    m_messages->setText(count(m_stats.messages));
-    m_frames->setText(count(m_stats.rxFrames));
-    m_badFcs->setText(count(m_stats.rxBadFcs));
-    m_discarded->setText(count(m_stats.rxDiscarded));
-    m_aborted->setText(count(m_stats.rxAborted));
+    for (int i = 0; i < m_channelCount; ++i) {
+        Channel &c = m_ch[i];
+        c.burstsPerSecond = c.edges / seconds;
+        c.edges = 0;
+        const quint32 peak = c.peakSecond;
+        c.peakSecond = 0;
+        c.levelPeak->setText(count(peak));
+        c.burstRate->setText(QString::number(c.burstsPerSecond, 'f', 1));
+        c.messages->setText(count(c.stats.messages));
+        c.frames->setText(count(c.stats.rxFrames));
+        c.badFcs->setText(count(c.stats.rxBadFcs));
+        c.discarded->setText(count(c.stats.rxDiscarded));
+        c.aborted->setText(count(c.stats.rxAborted));
 
-    StatusRow row;
-    row.level = peak;
-    row.squelchOpen = m_squelchOpen;
-    row.fifoWords = m_fifoWords;
-    row.burstsPerSecond = m_burstsPerSecond;
-    row.agcLinked = m_agcLinked && m_agc.available;
-    row.agcActive = m_agc.active;
-    if (row.agcLinked) {
-        row.gainDb = m_agc.gainDb;
-        row.lastPeak = m_agc.lastPeak;
-        row.agcBursts = m_agc.bursts;
-        row.agcChanges = m_agc.changes;
-        row.agcProtections = m_agc.protections;
-        row.agcErrors = m_agc.errors;
+        StatusRow row;
+        row.canal = QLatin1Char(char('A' + i));
+        row.level = peak;
+        row.squelchOpen = c.squelchOpen;
+        row.fifoWords = c.fifoWords;
+        row.burstsPerSecond = c.burstsPerSecond;
+        row.agcLinked = m_agcLinked && m_agc.available;
+        row.agcActive = m_agc.active;
+        if (row.agcLinked) {
+            row.gainDb = m_agc.gainDb;
+            row.lastPeak = m_agc.lastPeak;
+            row.agcBursts = m_agc.bursts;
+            row.agcChanges = m_agc.changes;
+            row.agcProtections = m_agc.protections;
+            row.agcErrors = m_agc.errors;
+        }
+        row.messages = c.stats.messages;
+        row.frames = c.stats.rxFrames;
+        row.badFcs = c.stats.rxBadFcs;
+        row.discarded = c.stats.rxDiscarded;
+        row.aborted = c.stats.rxAborted;
+        emit statusRow(row);
     }
-    row.messages = m_stats.messages;
-    row.frames = m_stats.rxFrames;
-    row.badFcs = m_stats.rxBadFcs;
-    row.discarded = m_stats.rxDiscarded;
-    row.aborted = m_stats.rxAborted;
-    emit statusRow(row);
 }

@@ -7,9 +7,10 @@
 #include <QObject>
 #include <QString>
 
-// Una fila del registro de estado del receptor (una por segundo).
+// Una fila del registro de estado del receptor (una por segundo y por canal).
 struct StatusRow
 {
+    QChar canal = QLatin1Char('A');   // 'A' o 'B'
     quint32 level = 0;          // pico del nivel en el ultimo segundo
     bool squelchOpen = false;
     quint32 fifoWords = 0;
@@ -31,8 +32,8 @@ struct StatusRow
 
 /*
  * Registro de la sesion en dos archivos CSV (UTF-8, separados por comas, decimales con punto, horas en UTC):
- *   mensajes_<fecha>.csv  una fila por mensaje AIS decodificado, con el estado del buque despues de ese mensaje
- *   receptor_<fecha>.csv  una fila por segundo con el nivel y el squelch del receptor, el AGC y los contadores del armado de tramas
+ *   mensajes_<fecha>.csv  una fila por mensaje AIS decodificado, con el canal por el que llego y el estado del buque despues de ese mensaje
+ *   receptor_<fecha>.csv  una fila por segundo y por canal con el nivel y el squelch del receptor, el AGC y los contadores del armado de tramas
  * Sirve para medir perdidas y el comportamiento del AGC en las pruebas largas.
  */
 class SessionLogger : public QObject
@@ -52,7 +53,7 @@ public:
     static QString csvField(const QString &text);
 
 public slots:
-    void logMessage(const Vessel &vessel);
+    void logMessage(const Vessel &vessel, QChar channel);
     void logStatus(const StatusRow &row);
 
 private:

@@ -56,9 +56,9 @@ bool SessionLogger::start(const QString &folder, QString *error)
         return fail(tr("No se pudo abrir %1: %2").arg(QDir::toNativeSeparators(m_messages.fileName()), m_messages.errorString()));
     if (!m_status.open(QIODevice::WriteOnly | QIODevice::Truncate))
         return fail(tr("No se pudo abrir %1: %2").arg(QDir::toNativeSeparators(m_status.fileName()), m_status.errorString()));
-    m_messages.write("hora_utc,mmsi,tipo_msg,nombre,indicativo,tipo_buque,destino,lat,lon,sog_kn,cog_grados,rumbo_grados,estado_nav,eslora_m,"
+    m_messages.write("hora_utc,canal,mmsi,tipo_msg,nombre,indicativo,tipo_buque,destino,lat,lon,sog_kn,cog_grados,rumbo_grados,estado_nav,eslora_m,"
                      "manga_m,calado_m,mensajes_del_buque\n");
-    m_status.write("hora_utc,nivel_pico_1s,squelch,palabras_fifo,rafagas_por_s,agc_enlace,agc_activo,ganancia_db,ultimo_pico,agc_rafagas,agc_cambios,"
+    m_status.write("hora_utc,canal,nivel_pico_1s,squelch,palabras_fifo,rafagas_por_s,agc_enlace,agc_activo,ganancia_db,ultimo_pico,agc_rafagas,agc_cambios,"
                    "agc_protecciones,agc_errores,mensajes_ais,tramas_ok,fcs_malo,descartadas,abortadas\n");
     m_messages.flush();
     m_status.flush();
@@ -73,11 +73,12 @@ void SessionLogger::stop()
         m_status.close();
 }
 
-void SessionLogger::logMessage(const Vessel &v)
+void SessionLogger::logMessage(const Vessel &v, QChar channel)
 {
     if (!m_messages.isOpen())
         return;
     const QStringList f = {now(),
+                           QString(channel),
                            QString::number(v.mmsi),
                            QString::number(v.lastMsgType),
                            csvField(v.name),
@@ -103,6 +104,7 @@ void SessionLogger::logStatus(const StatusRow &r)
     if (!m_status.isOpen())
         return;
     const QStringList f = {now(),
+                           QString(r.canal),
                            QString::number(r.level),
                            QString::number(r.squelchOpen ? 1 : 0),
                            QString::number(r.fifoWords),

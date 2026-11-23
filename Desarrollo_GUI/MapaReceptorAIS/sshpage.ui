@@ -352,7 +352,7 @@
            <item row="0" column="1">
             <widget class="QLineEdit" name="txtCmdIniciar">
              <property name="text">
-              <string>killall adc_server adrf_server 2&gt;/dev/null; sleep 1; cd /media/mmcblk0p1/apps &amp;&amp; ./start.sh &amp;&amp; (nohup ./adc_server &gt; /tmp/adc.log 2&gt;&amp;1 &amp;) &amp;&amp; sleep 1 &amp;&amp; (nohup ./adrf_server -c adrf6850.conf -a -d -g agc.conf &gt; /tmp/adrf.log 2&gt;&amp;1 &amp;) &amp;&amp; sleep 2 &amp;&amp; tail -n 8 /tmp/adc.log /tmp/adrf.log &amp;&amp; echo "Receptor iniciado (adc_server: 1003, adrf_server: 1005, AGC activo)"</string>
+              <string>killall adc_server adrf_server adc_server_2ch adrf_server_2ch 2&gt;/dev/null; sleep 1; cd /media/mmcblk0p1/apps &amp;&amp; ./start_2ch.sh &amp;&amp; (nohup ./adc_server_2ch &gt; /tmp/adc.log 2&gt;&amp;1 &amp;) &amp;&amp; sleep 1 &amp;&amp; (nohup ./adrf_server_2ch -c adrf6850.conf -a -d -g agc.conf -b -j 0 &gt; /tmp/adrf.log 2&gt;&amp;1 &amp;) &amp;&amp; sleep 2 &amp;&amp; tail -n 8 /tmp/adc.log /tmp/adrf.log &amp;&amp; echo "Receptor iniciado (adc_server_2ch: 1003, adrf_server_2ch: 1005, AGC activo con los canales A y B)"</string>
              </property>
             </widget>
            </item>
@@ -366,7 +366,7 @@
            <item row="1" column="1">
             <widget class="QLineEdit" name="txtCmdDetener">
              <property name="text">
-              <string>killall adc_server adrf_server 2&gt;/dev/null; echo "Servidores detenidos"</string>
+              <string>killall adc_server adrf_server adc_server_2ch adrf_server_2ch 2&gt;/dev/null; echo "Servidores detenidos"</string>
              </property>
             </widget>
            </item>

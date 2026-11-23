@@ -28,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_connection = new ConnectionManager(this);
     m_simulator = new DemoSimulator(this);
     m_decoder = new AisDecoder(this);
+    m_decoderB = new AisDecoder(this);
 
     ui->mapPage->setModel(m_model);
     ui->connectionPage->setManager(m_connection);
@@ -68,7 +69,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_connection, &ConnectionManager::stateChanged, this,
             &MainWindow::onConnectionStateChanged);
     connect(m_connection, &ConnectionManager::dataReceived, this, &MainWindow::onRawDataReceived);
-    connect(m_connection, &ConnectionManager::wordsReceived, m_decoder, &AisDecoder::feedWords);
+    connect(m_connection, &ConnectionManager::wordsReceived, this, &MainWindow::onReceiverWords);
+    connect(m_connection, &ConnectionManager::receiverChannels, this, &MainWindow::onReceiverChannels);
+    connect(m_connection, &ConnectionManager::receiverChannels, m_receiverPage, &ReceiverPage::setChannelCount);
     connect(m_connection, &ConnectionManager::receiverStatus, this, &MainWindow::onReceiverStatus);
     connect(m_connection, &ConnectionManager::receiverStatus, m_receiverPage, &ReceiverPage::setReceiverStatus);
 
@@ -81,13 +84,16 @@ MainWindow::MainWindow(QWidget *parent)
         if (m_adrf->isOpen())
             m_adrf->open(m_connection->config().host, port);
     });
-    connect(m_decoder, &AisDecoder::vesselDecoded, m_logger, &SessionLogger::logMessage);
     connect(m_receiverPage, &ReceiverPage::statusRow, m_logger, &SessionLogger::logStatus);
     connect(m_receiverPage, &ReceiverPage::loggingRequested, this, &MainWindow::onLoggingRequested);
 
-    // Decodificador AIS: cada buque decodificado entra al mismo modelo que usa el mapa
-    connect(m_decoder, &AisDecoder::vesselDecoded, m_model, &VesselModel::upsert);
-    connect(m_decoder, &AisDecoder::statsChanged, this, &MainWindow::updateDecoderStatus);
+    // Un decodificador por canal: cada buque decodificado, de cualquiera de los dos, entra al mismo modelo que usa el mapa
+    for (AisDecoder *decoder : {m_decoder, m_decoderB}) {
+        const QChar channel = QLatin1Char(decoder == m_decoder ? 'A' : 'B');
+        connect(decoder, &AisDecoder::vesselDecoded, m_model, &VesselModel::upsert);
+        connect(decoder, &AisDecoder::vesselDecoded, this, [this, channel](const Vessel &vessel) { m_logger->logMessage(vessel, channel); });
+        connect(decoder, &AisDecoder::statsChanged, this, &MainWindow::updateDecoderStatus);
+    }
 
     connect(m_model, &VesselModel::countChanged, this,
             [this](int n) { m_statusVessels->setText(tr("Buques: %1").arg(n)); });
@@ -145,8 +151,12 @@ void MainWindow::onConnectionStateChanged(ConnectionManager::State state, const 
     }
 
     // Conexion nueva: se descarta cualquier linea o mensaje a medio armar
-    if (state == ConnectionManager::State::Connecting || state == ConnectionManager::State::Listening)
+    if (state == ConnectionManager::State::Connecting || state == ConnectionManager::State::Listening) {
         m_decoder->reset();
+        m_decoderB->reset();
+        m_channelCount = 1;
+        m_rx[0] = m_rx[1] = ChannelState();
+    }
 }
 
 void MainWindow::onRawDataReceived(const QByteArray &data)
@@ -164,16 +174,46 @@ void MainWindow::onRawDataReceived(const QByteArray &data)
     }
 }
 
-void MainWindow::onReceiverStatus(quint32 level, bool squelchOpen, quint32 fifoWords)
+void MainWindow::onReceiverWords(int channel, const QVector<quint32> &words)
 {
-    // El estado llega cada 20 ms: se muestra unas pocas veces por segundo.
+    (channel == 1 ? m_decoderB : m_decoder)->feedWords(words);
+}
+
+void MainWindow::onReceiverChannels(int count)
+{
+    m_channelCount = qBound(1, count, 2);
+    refreshReceiverLabel();
+}
+
+void MainWindow::onReceiverStatus(int channel, quint32 level, bool squelchOpen, quint32 fifoWords)
+{
+    if (channel < 0 || channel > 1)
+        return;
+    m_rx[channel] = {level, squelchOpen, fifoWords};
+    // El estado llega cada 20 ms por canal: se muestra unas pocas veces por segundo.
     if (m_receiverStatusTimer.isValid() && m_receiverStatusTimer.elapsed() < 250)
         return;
     m_receiverStatusTimer.start();
-    m_statusReceiver->setText(tr("Receptor: nivel %L1 · squelch %2")
-                                  .arg(level)
-                                  .arg(squelchOpen ? tr("abierto") : tr("cerrado")));
-    m_statusReceiver->setToolTip(tr("Palabras pendientes en la FIFO del receptor: %L1").arg(fifoWords));
+    refreshReceiverLabel();
+}
+
+void MainWindow::refreshReceiverLabel()
+{
+    const QString open = tr("abierto");
+    const QString closed = tr("cerrado");
+    if (m_channelCount > 1) {
+        m_statusReceiver->setText(tr("Receptor A: nivel %L1 (%2) · B: nivel %L3 (%4)")
+                                      .arg(m_rx[0].level)
+                                      .arg(m_rx[0].squelchOpen ? open : closed)
+                                      .arg(m_rx[1].level)
+                                      .arg(m_rx[1].squelchOpen ? open : closed));
+        m_statusReceiver->setToolTip(tr("Palabras pendientes en las FIFO del receptor: A %L1, B %L2")
+                                         .arg(m_rx[0].fifoWords)
+                                         .arg(m_rx[1].fifoWords));
+        return;
+    }
+    m_statusReceiver->setText(tr("Receptor: nivel %L1 · squelch %2").arg(m_rx[0].level).arg(m_rx[0].squelchOpen ? open : closed));
+    m_statusReceiver->setToolTip(tr("Palabras pendientes en la FIFO del receptor: %L1").arg(m_rx[0].fifoWords));
 }
 
 void MainWindow::onAgcStatus(const AgcStatus &s)
@@ -216,27 +256,54 @@ void MainWindow::onLoggingRequested(bool on, const QString &folder)
                                                    QDir::toNativeSeparators(m_logger->statusPath())));
 }
 
+namespace {
+// Los contadores de los dos canales, sumados
+AisDecoder::Stats sumStats(const AisDecoder::Stats &a, const AisDecoder::Stats &b)
+{
+    AisDecoder::Stats s = a;
+    s.sentences += b.sentences;
+    s.badChecksum += b.badChecksum;
+    s.malformed += b.malformed;
+    s.messages += b.messages;
+    s.unsupported += b.unsupported;
+    for (auto it = b.byType.cbegin(); it != b.byType.cend(); ++it)
+        s.byType[it.key()] += it.value();
+    s.rxBits += b.rxBits;
+    s.rxCandidates += b.rxCandidates;
+    s.rxBadFcs += b.rxBadFcs;
+    s.rxDiscarded += b.rxDiscarded;
+    s.rxAborted += b.rxAborted;
+    s.rxFrames += b.rxFrames;
+    return s;
+}
+} // namespace
+
 void MainWindow::updateDecoderStatus()
 {
-    const AisDecoder::Stats &st = m_decoder->stats();
-    m_receiverPage->setDecoderStats(st);
+    m_receiverPage->setDecoderStats(0, m_decoder->stats());
+    m_receiverPage->setDecoderStats(1, m_decoderB->stats());
+    const AisDecoder::Stats st = sumStats(m_decoder->stats(), m_decoderB->stats());
     m_statusAis->setText(tr("AIS: %L1 mensajes").arg(st.messages));
     QStringList types;
     for (auto it = st.byType.cbegin(); it != st.byType.cend(); ++it)
         types << tr("tipo %1: %L2").arg(it.key()).arg(it.value());
-    m_statusAis->setToolTip(tr("Sentencias válidas: %L1\nChecksum inválido: %L2\nMal formadas: %L3\n"
-                               "Tipos sin buque (ignorados): %L4\n"
-                               "Receptor: bits %L5, tramas %L6, FCS malo %L7, descartadas por tipo o largo %L8, abortadas %L9\n%10")
-                                .arg(st.sentences)
-                                .arg(st.badChecksum)
-                                .arg(st.malformed)
-                                .arg(st.unsupported)
-                                .arg(st.rxBits)
-                                .arg(st.rxFrames)
-                                .arg(st.rxBadFcs)
-                                .arg(st.rxDiscarded)
-                                .arg(st.rxAborted)
-                                .arg(types.join(QLatin1Char('\n'))));
+    QString perChannel;
+    if (m_channelCount > 1)
+        perChannel = tr("Mensajes por canal: A %L1, B %L2\n").arg(m_decoder->stats().messages).arg(m_decoderB->stats().messages);
+    m_statusAis->setToolTip(perChannel
+                            + tr("Sentencias válidas: %L1\nChecksum inválido: %L2\nMal formadas: %L3\n"
+                                 "Tipos sin buque (ignorados): %L4\n"
+                                 "Receptor (suma de los canales): bits %L5, tramas %L6, FCS malo %L7, descartadas por tipo o largo %L8, abortadas %L9\n%10")
+                                  .arg(st.sentences)
+                                  .arg(st.badChecksum)
+                                  .arg(st.malformed)
+                                  .arg(st.unsupported)
+                                  .arg(st.rxBits)
+                                  .arg(st.rxFrames)
+                                  .arg(st.rxBadFcs)
+                                  .arg(st.rxDiscarded)
+                                  .arg(st.rxAborted)
+                                  .arg(types.join(QLatin1Char('\n'))));
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

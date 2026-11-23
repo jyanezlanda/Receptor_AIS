@@ -40,7 +40,10 @@ private:
     void onConnectionStateChanged(ConnectionManager::State state, const QString &message);
     void onRawDataReceived(const QByteArray &data);
     void updateDecoderStatus();
-    void onReceiverStatus(quint32 level, bool squelchOpen, quint32 fifoWords);
+    void onReceiverWords(int channel, const QVector<quint32> &words);
+    void onReceiverChannels(int count);
+    void onReceiverStatus(int channel, quint32 level, bool squelchOpen, quint32 fifoWords);
+    void refreshReceiverLabel();
     void onAgcStatus(const AgcStatus &status);
     void onAgcLink(bool linked, const QString &message);
     void onLoggingRequested(bool on, const QString &folder);
@@ -50,7 +53,8 @@ private:
     VesselModel *m_model = nullptr;
     ConnectionManager *m_connection = nullptr;
     DemoSimulator *m_simulator = nullptr;
-    AisDecoder *m_decoder = nullptr;
+    AisDecoder *m_decoder = nullptr;   // canal A (y las sentencias NMEA)
+    AisDecoder *m_decoderB = nullptr;  // canal B
     AdrfLink *m_adrf = nullptr;
     ReceiverPage *m_receiverPage = nullptr;
     SessionLogger *m_logger = nullptr;
@@ -62,6 +66,16 @@ private:
     QLabel *m_statusReceiver = nullptr;
     QLabel *m_statusAgc = nullptr;
     QElapsedTimer m_receiverStatusTimer;
+
+    // Ultimo estado de cada canal del receptor (0 = A, 1 = B)
+    struct ChannelState
+    {
+        quint32 level = 0;
+        bool squelchOpen = false;
+        quint32 fifoWords = 0;
+    };
+    ChannelState m_rx[2];
+    int m_channelCount = 1;
 };
 
 #endif // MAINWINDOW_H

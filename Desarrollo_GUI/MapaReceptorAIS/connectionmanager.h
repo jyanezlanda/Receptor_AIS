@@ -76,9 +76,10 @@ public slots:
 signals:
     void stateChanged(ConnectionManager::State state, const QString &message);
     void dataReceived(const QByteArray &data);
-    // Formato Receiver: palabras de la FIFO (los bits van del MSB al LSB) y estado del receptor.
-    void wordsReceived(const QVector<quint32> &words);
-    void receiverStatus(quint32 level, bool squelchOpen, quint32 fifoWords);
+    // Formato Receiver: palabras de la FIFO (los bits van del MSB al LSB) y estado de cada canal (0 = A, 1 = B).
+    void receiverChannels(int count);   // canales que tiene el servidor de datos; llega antes de que el estado pase a Conectado
+    void wordsReceived(int channel, const QVector<quint32> &words);
+    void receiverStatus(int channel, quint32 level, bool squelchOpen, quint32 fifoWords);
 
 private:
     void openSerial();
@@ -96,6 +97,7 @@ private:
     State m_state = State::Disconnected;
     bool m_wantOpen = false;
     quint64 m_rxBytes = 0;
+    int m_receiverChannels = 1;
 
     QSerialPort *m_serial = nullptr;
     QTcpSocket *m_tcp = nullptr;
